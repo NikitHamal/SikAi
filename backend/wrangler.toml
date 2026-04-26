@@ -1,0 +1,12 @@
+name = "sikai-content"
+main = "src/worker.ts"
+compatibility_date = "2026-04-26"
+
+[[r2_buckets]]
+binding = "CONTENT_BUCKET"
+bucket_name = "sikai-content"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sikai-content-db"
+database_id = "replace-with-d1-id"

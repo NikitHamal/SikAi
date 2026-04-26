@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-26T00:00:00Z",
+  "items": [
+    {
+      "id": "see-math-2080-sample",
+      "title": "SEE Mathematics Sample Paper 2080",
+      "type": "past_paper",
+      "classLevel": 10,
+      "subject": "Mathematics",
+      "year": 2080,
+      "fileKey": "past-papers/10/mathematics/2080-sample.pdf",
+      "sizeBytes": 123456,
+      "checksumSha256": "replace-with-real-sha256",
+      "version": 1,
+      "updatedAt": "2026-04-26T00:00:00Z",
+      "language": "en",
+      "tags": ["SEE", "past-paper"]
+    }
+  ]
+}

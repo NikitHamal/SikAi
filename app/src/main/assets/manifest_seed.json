@@ -1,0 +1,34 @@
+[
+  {
+    "id": "see-math-2080-sample",
+    "title": "SEE Mathematics Sample Paper 2080",
+    "type": "past_paper",
+    "classLevel": 10,
+    "subject": "Mathematics",
+    "year": 2080,
+    "fileUrl": "asset://content/class10_math_paper.txt",
+    "fileKey": "past-papers/10/mathematics/2080-sample.txt",
+    "sizeBytes": 170,
+    "checksumSha256": "2af4a361a387549f2bb111cb709eaea213afe0fec38c2c865af75025782295fc",
+    "version": 1,
+    "updatedAt": "2026-04-26T00:00:00Z",
+    "language": "en",
+    "tags": ["SEE", "math", "sample"]
+  },
+  {
+    "id": "neb-physics-notes-sample",
+    "title": "Class 12 Physics Electricity Notes",
+    "type": "notes",
+    "classLevel": 12,
+    "subject": "Physics",
+    "year": 2081,
+    "fileUrl": "asset://content/class12_physics_notes.txt",
+    "fileKey": "notes/12/physics/electricity.txt",
+    "sizeBytes": 128,
+    "checksumSha256": "81e6697654e975aa056f435f7a1f07bc9f4b8f40c46b40fd27efe1f565300d16",
+    "version": 1,
+    "updatedAt": "2026-04-26T00:00:00Z",
+    "language": "en",
+    "tags": ["NEB", "physics", "electricity"]
+  }
+]

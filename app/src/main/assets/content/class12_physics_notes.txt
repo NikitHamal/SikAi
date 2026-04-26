@@ -1,0 +1,4 @@
+SikAi Sample Physics Notes
+Class 12 NEB
+Ohm's law: V = IR.
+Kirchhoff laws help analyze current and voltage in circuits.

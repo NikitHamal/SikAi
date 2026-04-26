@@ -1,0 +1,3 @@
+-keep class kotlinx.serialization.** { *; }
+-keep class com.sikai.learn.**$$serializer { *; }
+-dontwarn org.bouncycastle.**

@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class EncryptedKeyStore @Inject constructor(@ApplicationContext context: Context) {
 
-    private val prefs: SharedPreferences = run {
+    private val prefs: SharedPreferences = runCatching {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
@@ -27,6 +27,9 @@ class EncryptedKeyStore @Inject constructor(@ApplicationContext context: Context
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }.getOrElse {
+        android.util.Log.e("EncryptedKeyStore", "Failed to init encrypted prefs, falling back to plain", it)
+        context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE)
     }
 
     fun put(alias: String, value: String) {

@@ -1,0 +1,19 @@
+name = "sikai-backend"
+main = "src/worker.js"
+compatibility_date = "2025-01-15"
+workers_dev = true
+
+# Public base URL used to construct fileUrl in manifest responses.
+[vars]
+PUBLIC_BASE_URL = "https://sikai-backend.example.workers.dev"
+
+# Cloudflare D1 — content manifest + question packs.
+[[d1_databases]]
+binding = "DB"
+database_name = "sikai"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Cloudflare R2 — downloadable textbooks, past papers, MCQ packs.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "sikai-content"

@@ -1,0 +1,14 @@
+{
+  "name": "sikai-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SikAi Cloudflare Worker — manifest, file proxy, question packs.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "schema:apply": "wrangler d1 execute sikai --file=schema.sql --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}

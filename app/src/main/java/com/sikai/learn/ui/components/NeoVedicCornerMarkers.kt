@@ -8,6 +8,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.sikai.learn.ui.theme.LocalNeoVedicAccent
 import com.sikai.learn.ui.theme.NeoVedicTokens
 
@@ -51,5 +52,3 @@ fun Modifier.neoVedicCornerMarkers(
 fun NeoVedicSpacer(width: Dp = 0.dp, height: Dp = 0.dp) {
     androidx.compose.foundation.layout.Spacer(Modifier.size(width, height))
 }
-
-private val Dp.dp get() = this

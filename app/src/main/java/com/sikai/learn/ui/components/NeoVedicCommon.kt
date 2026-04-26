@@ -42,7 +42,7 @@ fun NeoVedicPageHeader(
             if (onBack != null) {
                 IconButton(onClick = onBack) {
                     Icon(
-                        androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                        androidx.compose.material.icons.Icons.Default.ArrowBack,
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.onSurface,
                     )

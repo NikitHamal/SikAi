@@ -12,7 +12,7 @@ import com.sikai.learn.domain.model.AiTask
  */
 object PromptBuilder {
 
-    private const val IDENTITY = """
+    private val IDENTITY = """
 You are SikAi (सिकाइ), an AI tutor built for students in Nepal preparing for school
 boards: Class 8, Class 10 (SEE), and Class 12 (NEB). Speak like a friendly,
 patient teacher. Prefer simple language. Use Nepali examples when they help, but

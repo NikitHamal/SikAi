@@ -10,6 +10,7 @@ import com.sikai.learn.data.repository.UserProfileRepository
 import com.sikai.learn.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,26 +39,34 @@ class BootViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            Log.d(TAG, "Boot starting")
             try {
                 withTimeout(10_000L) {
                     withContext(Dispatchers.IO) {
+                        Log.d(TAG, "Boot: seeding AI providers")
                         try {
                             aiProviders.ensureBootstrap()
+                            Log.d(TAG, "Boot: AI providers seeded OK")
                         } catch (e: Exception) {
                             Log.e(TAG, "Bootstrap providers failed", e)
                         }
                         try {
+                            Log.d(TAG, "Boot: seeding questions/manifest")
                             seed.ensureSeeded()
+                            Log.d(TAG, "Boot: seed OK")
                         } catch (e: Exception) {
                             Log.e(TAG, "Seed bootstrap failed", e)
                         }
                     }
+                    Log.d(TAG, "Boot: reading user state")
                     try {
                         val onboarded = users.isOnboarded()
+                        Log.d(TAG, "Boot: isOnboarded=$onboarded")
                         val theme = settings.themeMode.first()
+                        Log.d(TAG, "Boot: theme=$theme")
                         _state.value = BootState(ready = true, isOnboarded = onboarded, themeMode = theme)
                     } catch (e: Exception) {
-                        Log.e(TAG, "User state read failed", e)
+                        Log.e(TAG, "User state read failed, defaulting", e)
                         _state.value = BootState(ready = true)
                     }
                 }
@@ -65,6 +74,7 @@ class BootViewModel @Inject constructor(
                 Log.e(TAG, "Boot timed out, forcing ready", e)
                 _state.value = BootState(ready = true)
             }
+            Log.d(TAG, "Boot complete, ready=true")
 
             try {
                 settings.themeMode.collect { mode ->
@@ -72,6 +82,14 @@ class BootViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Theme collect failed", e)
+            }
+        }
+
+        viewModelScope.launch {
+            delay(5_000L)
+            if (!_state.value.ready) {
+                Log.e(TAG, "Boot safety timeout fired, forcing ready")
+                _state.value = BootState(ready = true)
             }
         }
     }

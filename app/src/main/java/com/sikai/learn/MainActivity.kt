@@ -1,6 +1,8 @@
 package com.sikai.learn
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +29,9 @@ class MainActivity : ComponentActivity() {
 
         var keepSplash = true
         splash.setKeepOnScreenCondition { keepSplash }
+
+        // Safety timeout: dismiss splash after 3s even if boot isn't ready
+        Handler(Looper.getMainLooper()).postDelayed({ keepSplash = false }, 3000)
 
         setContent {
             val bootVm: BootViewModel = hiltViewModel()

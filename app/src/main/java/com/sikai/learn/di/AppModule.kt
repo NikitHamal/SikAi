@@ -77,6 +77,7 @@ object AppModule {
     fun provideDatabase(@ApplicationContext context: Context): SikAiDatabase =
         Room.databaseBuilder(context, SikAiDatabase::class.java, SikAiDatabase.NAME)
             .fallbackToDestructiveMigration()
+            .allowMainThreadQueries()
             .build()
 
     @Provides fun provideUserProfileDao(db: SikAiDatabase) = db.userProfileDao()

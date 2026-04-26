@@ -39,16 +39,25 @@ class BootViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Ensure built-in providers exist before any screen tries to read them.
-            aiProviders.ensureBootstrap()
-            // Seed the question bank + offline manifest from bundled assets on
-            // first launch so the app is useful even without network/AI keys.
-            seed.ensureSeeded()
-            val onboarded = users.isOnboarded()
-            val theme = settings.themeMode.first()
-            _state.value = BootState(ready = true, isOnboarded = onboarded, themeMode = theme)
+            try {
+                aiProviders.ensureBootstrap()
+            } catch (e: Exception) {
+                android.util.Log.e("BootViewModel", "Bootstrap providers failed", e)
+            }
+            try {
+                seed.ensureSeeded()
+            } catch (e: Exception) {
+                android.util.Log.e("BootViewModel", "Seed bootstrap failed", e)
+            }
+            try {
+                val onboarded = users.isOnboarded()
+                val theme = settings.themeMode.first()
+                _state.value = BootState(ready = true, isOnboarded = onboarded, themeMode = theme)
+            } catch (e: Exception) {
+                android.util.Log.e("BootViewModel", "User state read failed", e)
+                _state.value = BootState(ready = true)
+            }
 
-            // Keep the theme reactive after first frame.
             settings.themeMode.collect { mode ->
                 _state.value = _state.value.copy(themeMode = mode)
             }

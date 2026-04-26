@@ -14,8 +14,10 @@ class SikAiApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             Log.e("SikAi", "Uncaught exception on ${thread.name}", throwable)
+            defaultHandler?.uncaughtException(thread, throwable)
         }
     }
 

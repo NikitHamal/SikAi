@@ -79,12 +79,11 @@ internal object QwenFileUpload {
             
         val putCode = runCatching {
             client.newCall(putReq).execute().use { 
-                android.util.Log.d("QwenUpload", "PUT response: ${it.code}, ${it.body?.string()?.take(200)}")
-                it.code 
+                val body = it.body?.string() ?: ""
+                android.util.Log.e("QwenUpload", "PUT failed: ${it.code}, body: $body")
+                throw IllegalStateException("OSS upload failed HTTP ${it.code}: $body")
             }
         }.getOrElse { throw IllegalStateException("OSS upload network error: ${it.message}") }
-        
-        if (putCode !in 200..299) throw IllegalStateException("OSS upload failed HTTP $putCode")
 
         val now = System.currentTimeMillis()
         return buildJsonObject {
@@ -167,7 +166,7 @@ internal object QwenFileUpload {
 
         return mapOf(
             "Content-Type" to contentType,
-            "Content-MD5" to contentMd5,
+            "content-md5" to contentMd5,
             "x-oss-content-sha256" to "UNSIGNED-PAYLOAD",
             "x-oss-date" to dateStr,
             "x-oss-security-token" to securityToken,

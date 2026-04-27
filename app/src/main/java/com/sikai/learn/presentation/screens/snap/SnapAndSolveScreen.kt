@@ -1,6 +1,6 @@
 package com.sikai.learn.presentation.screens.snap
 
-import android.content.Context
+import android.Manifest
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -24,6 +24,10 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoFixHigh
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.sikai.learn.domain.model.AiCapability
+import com.sikai.learn.domain.model.AiModel
 import com.sikai.learn.ui.components.SikAiAiAnswerCard
 import com.sikai.learn.ui.components.SikAiButton
 import com.sikai.learn.ui.components.SikAiButtonVariant
@@ -74,6 +80,17 @@ fun SnapAndSolveScreen(
         if (success && uri != null) viewModel.setAttachment(uri, "image/jpeg")
     }
 
+    val cameraPermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera(context) { uri ->
+                cameraPhotoUri = uri
+                takePhoto.launch(uri)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,6 +110,16 @@ fun SnapAndSolveScreen(
         )
 
         Column(modifier = Modifier.padding(horizontal = tokens.pageHorizontal, vertical = 12.dp)) {
+            ModelSelector(
+                models = state.availableModels,
+                selectedModel = state.selectedModel,
+                onSelectModel = viewModel::selectModel,
+                isRefreshing = state.refreshingModels,
+                onRefresh = viewModel::refreshModels,
+            )
+
+            Spacer(Modifier.height(12.dp))
+
             if (state.attachmentUri == null) {
                 SikAiEmptyState(
                     title = "Attach a question",
@@ -103,10 +130,7 @@ fun SnapAndSolveScreen(
                     SikAiButton(
                         text = "Camera",
                         onClick = {
-                            val photoFile = File(context.cacheDir, "snap_${System.currentTimeMillis()}.jpg")
-                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
-                            cameraPhotoUri = uri
-                            takePhoto.launch(uri)
+                            cameraPermission.launch(Manifest.permission.CAMERA)
                         },
                         leadingIcon = Icons.Outlined.CameraAlt,
                         modifier = Modifier.weight(1f)
@@ -165,7 +189,7 @@ fun SnapAndSolveScreen(
                     )
                     Spacer(Modifier.width(10.dp))
                     SikAiButton(
-                        text = if (state.solving) "Solving…" else "Solve with AI",
+                        text = if (state.solving) "Solving..." else "Solve with AI",
                         onClick = { viewModel.solve(extraPrompt.ifBlank { null }) },
                         leadingIcon = Icons.Outlined.AutoFixHigh,
                         enabled = !state.solving,
@@ -197,4 +221,98 @@ fun SnapAndSolveScreen(
             Spacer(Modifier.height(40.dp))
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModelSelector(
+    models: List<AiModel>,
+    selectedModel: AiModel?,
+    onSelectModel: (AiModel) -> Unit,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+) {
+    val tokens = SikAi.tokens
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = selectedModel?.displayName ?: "Default"
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            SikAiTextField(
+                value = selectedLabel,
+                onValueChange = {},
+                readOnly = true,
+                label = "Model",
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier.menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                if (models.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("Loading models...") },
+                        onClick = {},
+                        enabled = false,
+                    )
+                }
+                models.forEach { model ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(model.displayName, style = SikAi.type.bodyMedium)
+                                val caps = model.capabilities.mapNotNull {
+                                    when (it) {
+                                        AiCapability.VISION -> "Vision"
+                                        AiCapability.THINKING -> "Thinking"
+                                        AiCapability.PDF -> "PDF"
+                                        AiCapability.SEARCH -> "Search"
+                                        else -> null
+                                    }
+                                }
+                                if (caps.isNotEmpty()) {
+                                    Text(
+                                        caps.joinToString(" · "),
+                                        style = SikAi.type.caption,
+                                        color = SikAi.colors.onSurfaceMuted,
+                                    )
+                                }
+                            }
+                        },
+                        onClick = {
+                            onSelectModel(model)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+        SikAiButton(
+            text = if (isRefreshing) "..." else "Refresh",
+            onClick = onRefresh,
+            variant = SikAiButtonVariant.Ghost,
+        )
+    }
+}
+
+private fun launchCamera(
+    context: android.content.Context,
+    onUri: (Uri) -> Unit,
+) {
+    val photoFile = File(context.cacheDir, "snap_${System.currentTimeMillis()}.jpg").also {
+        it.parentFile?.mkdirs()
+    }
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
+    onUri(uri)
 }

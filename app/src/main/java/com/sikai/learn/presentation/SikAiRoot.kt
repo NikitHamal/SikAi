@@ -4,13 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoStories
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Chat
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,12 +26,12 @@ import com.sikai.learn.presentation.screens.studyplan.StudyPlanScreen
 import com.sikai.learn.ui.components.SikAiBottomNav
 import com.sikai.learn.ui.components.SikAiNavItem
 import com.sikai.learn.ui.theme.SikAi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
 
-/**
- * Top-level navigation. The bottom tabs cover the daily-driver surfaces; the
- * deeper screens (notes, papers, plan, progress) hang off Home cards or
- * Settings entries.
- */
 object Routes {
     const val Onboarding = "onboarding"
     const val Home = "home"
@@ -55,7 +48,6 @@ object Routes {
 
 private val tabs = listOf(
     SikAiNavItem(Routes.Home, "Home", Icons.Outlined.Home),
-    SikAiNavItem(Routes.AiTutor, "Tutor", Icons.Outlined.Chat),
     SikAiNavItem(Routes.Snap, "Snap", Icons.Outlined.CameraAlt),
     SikAiNavItem(Routes.PastPapers, "Papers", Icons.Outlined.AutoStories),
     SikAiNavItem(Routes.Settings, "Settings", Icons.Outlined.Settings),

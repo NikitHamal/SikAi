@@ -5,11 +5,14 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sikai.learn.ai.AiOrchestrator
+import com.sikai.learn.ai.qwen.QwenModelCatalog
 import com.sikai.learn.data.repository.UserProfileRepository
+import com.sikai.learn.domain.model.AiCapability
 import com.sikai.learn.domain.model.AiAttachment
 import com.sikai.learn.domain.model.AiMessage
 import com.sikai.learn.domain.model.AiMessageRole
 import com.sikai.learn.domain.model.AiMode
+import com.sikai.learn.domain.model.AiModel
 import com.sikai.learn.domain.model.AiProviderResult
 import com.sikai.learn.domain.model.AiRequest
 import com.sikai.learn.domain.model.AiTask
@@ -31,6 +34,9 @@ data class SnapState(
     val answerMarkdown: String? = null,
     val providerLabel: String? = null,
     val errorMessage: String? = null,
+    val availableModels: List<AiModel> = emptyList(),
+    val selectedModel: AiModel? = null,
+    val refreshingModels: Boolean = false,
 )
 
 @HiltViewModel
@@ -38,10 +44,38 @@ class SnapAndSolveViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val orchestrator: AiOrchestrator,
     private val users: UserProfileRepository,
+    private val modelCatalog: QwenModelCatalog,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SnapState())
     val state: StateFlow<SnapState> = _state.asStateFlow()
+
+    init {
+        loadModels(forceRefresh = false)
+    }
+
+    private fun loadModels(forceRefresh: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(refreshingModels = true) }
+            val models = runCatching { modelCatalog.get(forceRefresh) }.getOrDefault(QwenModelCatalog.FALLBACK)
+            val visionModels = models.filter { model ->
+                model.capabilities.any { it == AiCapability.VISION || it == AiCapability.FILE_UPLOAD }
+            }
+            _state.update {
+                it.copy(
+                    availableModels = visionModels,
+                    selectedModel = it.selectedModel ?: visionModels.firstOrNull(),
+                    refreshingModels = false,
+                )
+            }
+        }
+    }
+
+    fun refreshModels() = loadModels(forceRefresh = true)
+
+    fun selectModel(model: AiModel) {
+        _state.update { it.copy(selectedModel = model) }
+    }
 
     fun setAttachment(uri: Uri, mimeType: String?) {
         val resolver = context.contentResolver
@@ -60,7 +94,7 @@ class SnapAndSolveViewModel @Inject constructor(
     }
 
     fun clearAttachment() {
-        _state.update { SnapState() }
+        _state.update { SnapState(availableModels = it.availableModels, selectedModel = it.selectedModel) }
     }
 
     fun solve(extraPrompt: String?) {
@@ -72,6 +106,8 @@ class SnapAndSolveViewModel @Inject constructor(
             val profile = users.current()
             val text = extraPrompt?.takeIf { it.isNotBlank() }
                 ?: "Solve this question for me. Show your working clearly."
+            val model = s.selectedModel
+            val preferredProviderId = if (model?.providerId == "qwen") "qwen" else null
             val request = AiRequest(
                 task = AiTask.SOLVE_FILE,
                 messages = listOf(
@@ -90,6 +126,8 @@ class SnapAndSolveViewModel @Inject constructor(
                 ),
                 classLevel = profile?.classLevel,
                 mode = AiMode.StepByStep,
+                preferredProviderId = preferredProviderId,
+                preferredModelId = model?.id,
             )
             val outcome = orchestrator.complete(request)
             when (outcome) {

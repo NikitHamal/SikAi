@@ -12,9 +12,18 @@ internal class QwenSession(
     val cookieJar: MutableMap<String, String> = mutableMapOf()
     val midToken: AtomicReference<String?> = AtomicReference(null)
     private var midTokenUses: Int = 0
+    private var fingerprint: String = ""
+    private var bxUa: String = ""
 
     fun seedSyntheticCookies() {
         cookieJar.clear()
+        
+        // Generate fingerprint and cookies using Flashy's algorithm
+        fingerprint = QwenFingerprint.generateFingerprint()
+        val fpCookies = QwenFingerprint.generateCookies(fingerprint)
+        cookieJar.putAll(fpCookies)
+        
+        // Add basic cookies
         cookieJar["acw_tc"] = randomHex(40)
         cookieJar["xlly_s"] = "1"
         cookieJar["cna"] = randomBase64ish(28)
@@ -22,12 +31,17 @@ internal class QwenSession(
         cookieJar["x-ap"] = "ap-southeast-1"
         cookieJar["sca"] = randomHex(8)
         cookieJar["isg"] = randomHex(40)
+        
+        // Generate bx-ua header
+        bxUa = QwenFingerprint.generateBxUa(fingerprint)
     }
 
     fun reset() {
         cookieJar.clear()
         midToken.set(null)
         midTokenUses = 0
+        fingerprint = ""
+        bxUa = ""
     }
 
     fun refreshMidTokenSync(): String? {
@@ -88,7 +102,7 @@ internal class QwenSession(
         }
     }
 
-    fun bxUaHeader(): String = ""
+    fun bxUaHeader(): String = bxUa
 
     private fun randomHex(len: Int): String =
         UUID.randomUUID().toString().replace("-", "").take(len).padEnd(len, 'a')

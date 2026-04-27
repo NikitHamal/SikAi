@@ -76,7 +76,7 @@ class BootViewModel @Inject constructor(
                             Log.e(TAG, "Subjects sync failed", e)
                         }
                         try {
-                            val classLevel = users.get()?.classLevel ?: 10
+                            val classLevel = users.current()?.classLevel ?: 10
                             Log.d(TAG, "Boot: syncing questions for class $classLevel")
                             syncRepo.syncQuestions(classLevel)
                             Log.d(TAG, "Boot: questions sync OK")

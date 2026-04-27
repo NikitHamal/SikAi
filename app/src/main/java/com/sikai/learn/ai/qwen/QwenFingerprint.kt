@@ -83,7 +83,7 @@ internal object QwenFingerprint {
         processed[36] = randomInt(10, 100).toString()
         processed[33] = System.currentTimeMillis().toString()
 
-        val ssxmodData = processed.joinToString("^") { it }
+        val ssxmodData = processed.joinToString("^")
         val ssxmod = "1-" + lzwEncode(ssxmodData)
 
         val ssxmod2Data = listOf(
@@ -91,7 +91,7 @@ internal object QwenFingerprint {
             "0", "", "0", "", "", "0", "0", "0",
             processed[32], processed[33],
             "0", "0", "0", "0", "0"
-        ).joinToString("^") { it }
+        ).joinToString("^")
         val ssxmod2 = "1-" + lzwEncode(ssxmod2Data)
 
         return mapOf(
@@ -141,7 +141,7 @@ internal object QwenFingerprint {
         val dictToCreate = mutableSetOf<String>()
         var w = ""
         val result = mutableListOf<Char>()
-        var value = 0L
+        var value = 0
         var position = 0
         var dictSize = 3
         var numBits = 2
@@ -152,7 +152,7 @@ internal object QwenFingerprint {
                 value = (value shl 1) or ((code shr i) and 1)
                 position++
                 if (position == 6) {
-                    result.add(CUSTOM_BASE64[value.toInt()])
+                    result.add(CUSTOM_BASE64[value])
                     value = 0
                     position = 0
                 }
@@ -162,10 +162,10 @@ internal object QwenFingerprint {
         fun pushRawChar(ch: Int) {
             val isSmall = ch < 256
             if (isSmall) {
-                for (i in 0 until numBits) { value = value shl 1; position++; if (position == 6) { result.add(CUSTOM_BASE64[value.toInt()]); value = 0; position = 0 } }
+                for (i in 0 until numBits) { value = value shl 1; position++; if (position == 6) { result.add(CUSTOM_BASE64[value]); value = 0; position = 0 } }
                 pushBits(ch and 0xFF)
             } else {
-                for (i in 0 until numBits) { value = (value shl 1) or 1; position++; if (position == 6) { result.add(CUSTOM_BASE64[value.toInt()]); value = 0; position = 0 } }
+                for (i in 0 until numBits) { value = (value shl 1) or 1; position++; if (position == 6) { result.add(CUSTOM_BASE64[value]); value = 0; position = 0 } }
                 val hi = (ch shr 8) and 0xFF
                 val lo = ch and 0xFF
                 pushBits(lo)
@@ -211,7 +211,7 @@ internal object QwenFingerprint {
             value = value shl 1
             position++
             if (position == 6) {
-                result.add(CUSTOM_BASE64[value.toInt()])
+                result.add(CUSTOM_BASE64[value])
                 value = 0
                 position = 0
                 break
@@ -232,16 +232,24 @@ internal object QwenFingerprint {
 
     private fun md5(input: String): String {
         val digest = MessageDigest.getInstance("MD5")
-        return digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+        val bytes = digest.digest(input.toByteArray())
+        val sb = StringBuilder()
+        for (b in bytes) sb.append("%02x".format(b))
+        return sb.toString()
     }
 
     private fun sha256(data: ByteArray): ByteArray =
         MessageDigest.getInstance("SHA-256").digest(data)
 
-    private fun randomHex(len: Int): String =
-        rng.nextBytes(ByteArray(len)).joinToString("") { "%02x".format(it) }.take(len)
+    private fun randomHex(len: Int): String {
+        val bytes = ByteArray(len)
+        rng.nextBytes(bytes)
+        val sb = StringBuilder()
+        for (b in bytes) sb.append("%02x".format(b))
+        return sb.toString().take(len)
+    }
 
-    private fun randomHash(): Int = rng.nextInt(0, Int.MAX_VALUE)
+    private fun randomHash(): Int = rng.nextInt(Int.MAX_VALUE)
 
     private fun randomInt(min: Int, max: Int): Int = rng.nextInt(min, max + 1)
 

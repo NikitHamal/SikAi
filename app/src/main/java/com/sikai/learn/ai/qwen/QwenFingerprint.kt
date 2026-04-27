@@ -221,7 +221,7 @@ internal object QwenFingerprint {
         return sb.toString()
     }
 
-    private fun randomHash(): Int = rng.nextInt(0, 0x7FFFFFFF)
+    private fun randomHash(): Int = rng.nextInt(0x7FFFFFFF)
 
     private fun randomInt(min: Int, max: Int): Int = min + rng.nextInt(max - min + 1)
     

@@ -251,7 +251,7 @@ internal object QwenFingerprint {
 
     private fun randomHash(): Int = rng.nextInt(Int.MAX_VALUE)
 
-    private fun randomInt(min: Int, max: Int): Int = rng.nextInt(min, max + 1)
+    private fun randomInt(min: Int, max: Int): Int = rng.nextInt(max - min + 1) + min
 
     private fun toJsonStr(map: Map<String, Any?>): String {
         val sb = StringBuilder("{")

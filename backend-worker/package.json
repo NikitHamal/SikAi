@@ -1,0 +1,19 @@
+{
+  "name": "sikai-content-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloudflare Worker backend for SikAi: serves the content manifest from D1 and proxies file downloads from R2.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:apply": "wrangler d1 execute sikai-content --file=migrations/0001_init.sql",
+    "db:apply:remote": "wrangler d1 execute sikai-content --remote --file=migrations/0001_init.sql",
+    "seed:local": "wrangler d1 execute sikai-content --file=sample-manifest/seed.sql",
+    "seed:remote": "wrangler d1 execute sikai-content --remote --file=sample-manifest/seed.sql"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250115.0",
+    "typescript": "^5.5.0",
+    "wrangler": "^3.95.0"
+  }
+}

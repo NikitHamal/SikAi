@@ -1,0 +1,109 @@
+name: Android release
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build signed APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute short SHA
+        id: meta
+        run: |
+          short=$(git rev-parse --short=8 HEAD)
+          echo "short_sha=$short" >> "$GITHUB_OUTPUT"
+          echo "Short SHA: $short"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Read signing properties
+        id: signing
+        run: |
+          set -e
+          # Pull store/key passwords + alias out of the committed file. These are
+          # intentionally non-secret — see README "Keystore note".
+          props=app/signing.properties
+          storePassword=$(grep -E '^storePassword=' "$props" | cut -d= -f2-)
+          keyAlias=$(grep -E '^keyAlias='       "$props" | cut -d= -f2-)
+          keyPassword=$(grep -E '^keyPassword=' "$props" | cut -d= -f2-)
+          echo "storePassword=$storePassword" >> "$GITHUB_OUTPUT"
+          echo "keyAlias=$keyAlias"           >> "$GITHUB_OUTPUT"
+          echo "keyPassword=$keyPassword"     >> "$GITHUB_OUTPUT"
+
+      - name: Generate release keystore (if missing)
+        run: |
+          set -e
+          ks=app/release-keystore.jks
+          if [ -f "$ks" ]; then
+            echo "Keystore already present, reusing committed key."
+          else
+            echo "Keystore missing — generating a deterministic dev keystore so the build can sign."
+            keytool -genkeypair -v \
+              -keystore "$ks" \
+              -storetype JKS \
+              -storepass "${{ steps.signing.outputs.storePassword }}" \
+              -keypass   "${{ steps.signing.outputs.keyPassword }}" \
+              -alias     "${{ steps.signing.outputs.keyAlias }}" \
+              -keyalg    RSA -keysize 2048 -validity 10950 \
+              -dname "CN=SikAi, O=SikAi, L=Kathmandu, S=Bagmati, C=NP"
+          fi
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Assemble release
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Rename APK with short SHA
+        id: apk
+        run: |
+          set -e
+          src=$(find app/build/outputs/apk/release -maxdepth 2 -name "*.apk" | head -n1)
+          if [ -z "$src" ]; then
+            echo "No APK found under app/build/outputs/apk/release"; exit 1
+          fi
+          out_dir=build/dist
+          mkdir -p "$out_dir"
+          dest="$out_dir/SikAi-${{ steps.meta.outputs.short_sha }}.apk"
+          cp "$src" "$dest"
+          echo "Built: $dest ($(du -h "$dest" | cut -f1))"
+          echo "apk_path=$dest" >> "$GITHUB_OUTPUT"
+          echo "apk_name=$(basename "$dest")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.apk_name }}
+          path: ${{ steps.apk.outputs.apk_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: ${{ steps.apk.outputs.apk_path }}

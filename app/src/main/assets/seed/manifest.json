@@ -1,0 +1,69 @@
+{
+  "comment": "Bundled offline manifest used as a fallback when the Cloudflare worker isn't reachable. Mirrors the worker's /v1/manifest schema.",
+  "items": [
+    {
+      "id": "see-2080-math",
+      "title": "SEE 2080 Mathematics — full paper",
+      "type": "past_paper",
+      "classLevel": 10,
+      "subject": "Mathematics",
+      "year": 2080,
+      "fileUrl": null,
+      "fileKey": "see/2080/math.pdf",
+      "sizeBytes": 0,
+      "checksumSha256": null,
+      "version": 1,
+      "updatedAt": 1740614400000,
+      "language": "en",
+      "tags": ["see", "2080", "mathematics"]
+    },
+    {
+      "id": "see-2080-science",
+      "title": "SEE 2080 Science — full paper",
+      "type": "past_paper",
+      "classLevel": 10,
+      "subject": "Science",
+      "year": 2080,
+      "fileUrl": null,
+      "fileKey": "see/2080/science.pdf",
+      "sizeBytes": 0,
+      "checksumSha256": null,
+      "version": 1,
+      "updatedAt": 1740614400000,
+      "language": "en",
+      "tags": ["see", "2080", "science"]
+    },
+    {
+      "id": "neb-2080-physics",
+      "title": "NEB Class 12 2080 Physics — full paper",
+      "type": "past_paper",
+      "classLevel": 12,
+      "subject": "Physics",
+      "year": 2080,
+      "fileUrl": null,
+      "fileKey": "neb/2080/physics.pdf",
+      "sizeBytes": 0,
+      "checksumSha256": null,
+      "version": 1,
+      "updatedAt": 1740614400000,
+      "language": "en",
+      "tags": ["neb", "2080", "physics"]
+    },
+    {
+      "id": "class10-syl-pack",
+      "title": "Class 10 SEE Syllabus Pack (CDC)",
+      "type": "syllabus",
+      "classLevel": 10,
+      "subject": "All",
+      "year": null,
+      "fileUrl": null,
+      "fileKey": "cdc/class10/pack.pdf",
+      "sizeBytes": 0,
+      "checksumSha256": null,
+      "version": 1,
+      "updatedAt": 1740614400000,
+      "language": "en",
+      "tags": ["cdc", "syllabus", "see"]
+    }
+  ]
+}

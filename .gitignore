@@ -1,0 +1,36 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+local.properties
+captures/
+.cxx/
+
+# Kotlin
+.kotlin/
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+out/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend (cloudflare worker)
+backend/node_modules/
+backend/.wrangler/
+backend/dist/
+
+# IMPORTANT: keystore IS intentionally committed for repeatable signed builds
+# Do NOT add app/release-keystore.jks here.

@@ -18,10 +18,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
-fun NeoVedicTextField(
+fun SikAiTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -33,9 +33,9 @@ fun NeoVedicTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     masked: Boolean = false,
 ) {
-    val colors = NeoVedic.colors
-    val tokens = NeoVedic.tokens
-    val type = NeoVedic.type
+    val colors = SikAi.colors
+    val tokens = SikAi.tokens
+    val type = SikAi.type
 
     Column(modifier = modifier) {
         if (label != null) {
@@ -58,14 +58,7 @@ fun NeoVedicTextField(
                 .fillMaxWidth()
                 .clip(tokens.cornerSharp)
                 .background(colors.surfaceMuted)
-                .border(
-                    BorderStroke(
-                        if (isError) tokens.borderEmphasis else tokens.borderHairline,
-                        if (isError) colors.danger else colors.borderSubtle
-                    ),
-                    tokens.cornerSharp
-                )
-                .padding(horizontal = 14.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             decorationBox = { inner ->
                 if (value.isEmpty() && placeholder != null) {
                     Text(

@@ -11,29 +11,29 @@ import androidx.compose.runtime.staticCompositionLocalOf
 
 enum class ThemeMode { System, Light, Dark }
 
-val LocalNeoVedicColors = staticCompositionLocalOf<NeoVedicColors> {
-    error("NeoVedicColors not provided")
+val LocalSikAiColors = staticCompositionLocalOf<SikAiColors> {
+    error("SikAiColors not provided")
 }
 
-val LocalNeoVedicType = staticCompositionLocalOf<NeoVedicType> {
-    error("NeoVedicType not provided")
+val LocalSikAiType = staticCompositionLocalOf<SikAiType> {
+    error("SikAiType not provided")
 }
 
-val LocalNeoVedicTokens = staticCompositionLocalOf { NeoVedicTokens() }
+val LocalSikAiTokens = staticCompositionLocalOf { SikAiTokens() }
 
-object NeoVedic {
-    val colors: NeoVedicColors
-        @Composable get() = LocalNeoVedicColors.current
+object SikAi {
+    val colors: SikAiColors
+        @Composable get() = LocalSikAiColors.current
 
-    val type: NeoVedicType
-        @Composable get() = LocalNeoVedicType.current
+    val type: SikAiType
+        @Composable get() = LocalSikAiType.current
 
-    val tokens: NeoVedicTokens
-        @Composable get() = LocalNeoVedicTokens.current
+    val tokens: SikAiTokens
+        @Composable get() = LocalSikAiTokens.current
 }
 
 @Composable
-fun NeoVedicTheme(
+fun SikAiTheme(
     themeMode: ThemeMode = ThemeMode.System,
     content: @Composable () -> Unit,
 ) {
@@ -42,9 +42,9 @@ fun NeoVedicTheme(
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
-    val colors = if (isDark) darkNeoVedicColors() else lightNeoVedicColors()
-    val type = defaultNeoVedicType()
-    val tokens = NeoVedicTokens()
+    val colors = if (isDark) darkSikAiColors() else lightSikAiColors()
+    val type = defaultSikAiType()
+    val tokens = SikAiTokens()
 
     val materialColorScheme = if (isDark) {
         darkColorScheme(
@@ -83,9 +83,9 @@ fun NeoVedicTheme(
     }
 
     CompositionLocalProvider(
-        LocalNeoVedicColors provides colors,
-        LocalNeoVedicType provides type,
-        LocalNeoVedicTokens provides tokens,
+        LocalSikAiColors provides colors,
+        LocalSikAiType provides type,
+        LocalSikAiTokens provides tokens,
         LocalContentColor provides colors.onSurface,
     ) {
         MaterialTheme(

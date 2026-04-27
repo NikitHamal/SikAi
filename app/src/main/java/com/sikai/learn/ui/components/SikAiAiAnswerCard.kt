@@ -20,14 +20,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 
 @Composable
-fun NeoVedicAiAnswerCard(
+fun SikAiAiAnswerCard(
     markdown: String,
     providerLabel: String,
     modelLabel: String?,
@@ -37,8 +37,8 @@ fun NeoVedicAiAnswerCard(
     onSave: (() -> Unit)? = null,
     onRetry: (() -> Unit)? = null,
 ) {
-    val colors = NeoVedic.colors
-    NeoVedicCard(modifier = modifier.fillMaxWidth(), emphasized = true) {
+    val colors = SikAi.colors
+    SikAiCard(modifier = modifier.fillMaxWidth(), emphasized = true) {
         Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -46,16 +46,16 @@ fun NeoVedicAiAnswerCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    NeoVedicStatusPill(text = providerLabel, accent = colors.accent)
+                    SikAiStatusPill(text = providerLabel, accent = colors.accent)
                     if (modelLabel != null) {
                         Spacer(Modifier.width(6.dp))
-                        NeoVedicStatusPill(text = modelLabel)
+                        SikAiStatusPill(text = modelLabel)
                     }
                 }
                 if (isStreaming) {
                     Text(
                         text = "STREAMING",
-                        style = NeoVedic.type.label,
+                        style = SikAi.type.label,
                         color = colors.accent
                     )
                 }
@@ -83,8 +83,8 @@ private fun ActionLabel(text: String, onClick: () -> Unit) {
             .padding(end = 16.dp)
             .clickable(onClick = onClick),
         text = text,
-        style = NeoVedic.type.label,
-        color = NeoVedic.colors.onSurfaceMuted
+        style = SikAi.type.label,
+        color = SikAi.colors.onSurfaceMuted
     )
 }
 

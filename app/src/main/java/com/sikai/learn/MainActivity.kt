@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
@@ -17,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sikai.learn.presentation.SikAiRoot
 import com.sikai.learn.presentation.boot.BootViewModel
-import com.sikai.learn.ui.theme.NeoVedicTheme
+import com.sikai.learn.ui.theme.SikAiTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,8 +32,8 @@ class MainActivity : ComponentActivity() {
             val bootVm: BootViewModel = hiltViewModel()
             val state by bootVm.state.collectAsState()
 
-            NeoVedicTheme(themeMode = state.themeMode) {
-                Surface(modifier = Modifier.fillMaxSize()) {
+            SikAiTheme(themeMode = state.themeMode) {
+                Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                     if (state.ready) {
                         SikAiRoot(bootState = state)
                     } else {

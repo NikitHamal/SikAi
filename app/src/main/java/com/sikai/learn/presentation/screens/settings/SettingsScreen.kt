@@ -30,15 +30,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicButtonVariant
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicSectionTitle
-import com.sikai.learn.ui.components.NeoVedicStatusPill
-import com.sikai.learn.ui.components.NeoVedicTextField
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiButtonVariant
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiSectionTitle
+import com.sikai.learn.ui.components.SikAiStatusPill
+import com.sikai.learn.ui.components.SikAiTextField
+import com.sikai.learn.ui.theme.SikAi
 import com.sikai.learn.ui.theme.ThemeMode
 import com.sikai.learn.util.formatTimestamp
 
@@ -48,14 +48,14 @@ fun SettingsScreen(
     onOpenDownloads: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
-    val colors = NeoVedic.colors
+    val tokens = SikAi.tokens
+    val colors = SikAi.colors
 
     // Per-provider draft API key, keyed by provider id.
     val drafts = remember { mutableStateMapOf<String, String>() }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Settings",
             subtitle = "PROVIDERS · APPEARANCE · DATA",
         )
@@ -65,23 +65,23 @@ fun SettingsScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item { NeoVedicSectionTitle("Appearance") }
+            item { SikAiSectionTitle("Appearance") }
             item {
-                NeoVedicCard {
+                SikAiCard {
                     Column {
                         Text(
                             text = "Theme",
-                            style = NeoVedic.type.titleMedium,
+                            style = SikAi.type.titleMedium,
                             color = colors.onSurface,
                         )
                         Spacer(Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             ThemeMode.values().forEach { mode ->
                                 val selected = state.themeMode == mode
-                                NeoVedicButton(
+                                SikAiButton(
                                     text = mode.name,
                                     onClick = { viewModel.setThemeMode(mode) },
-                                    variant = if (selected) NeoVedicButtonVariant.Primary else NeoVedicButtonVariant.Secondary,
+                                    variant = if (selected) SikAiButtonVariant.Primary else SikAiButtonVariant.Secondary,
                                     modifier = Modifier.weight(1f),
                                 )
                             }
@@ -92,13 +92,13 @@ fun SettingsScreen(
 
             item { Spacer(Modifier.height(8.dp)) }
             item {
-                NeoVedicSectionTitle(text = "AI providers", trailing = {
-                    NeoVedicStatusPill(text = "${state.providers.count { it.config.enabled }}/${state.providers.size} ON")
+                SikAiSectionTitle(text = "AI providers", trailing = {
+                    SikAiStatusPill(text = "${state.providers.count { it.config.enabled }}/${state.providers.size} ON")
                 })
             }
             if (state.providers.isEmpty()) {
                 item {
-                    NeoVedicEmptyState(
+                    SikAiEmptyState(
                         title = "No providers configured",
                         description = "Built-in providers will load on first launch.",
                     )
@@ -106,32 +106,32 @@ fun SettingsScreen(
             } else {
                 items(state.providers, key = { it.config.id }) { row ->
                     val cfg = row.config
-                    NeoVedicCard {
+                    SikAiCard {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             text = cfg.displayName,
-                                            style = NeoVedic.type.titleMedium,
+                                            style = SikAi.type.titleMedium,
                                             color = colors.onSurface,
                                         )
                                         Spacer(Modifier.width(8.dp))
                                         if (cfg.isBuiltIn) {
-                                            NeoVedicStatusPill(text = "BUILT-IN")
+                                            SikAiStatusPill(text = "BUILT-IN")
                                         }
                                     }
                                     Spacer(Modifier.height(4.dp))
                                     Text(
                                         text = cfg.type,
-                                        style = NeoVedic.type.caption,
+                                        style = SikAi.type.caption,
                                         color = colors.onSurfaceMuted,
                                     )
                                     if (cfg.baseUrl != null) {
                                         Spacer(Modifier.height(2.dp))
                                         Text(
                                             text = cfg.baseUrl,
-                                            style = NeoVedic.type.caption,
+                                            style = SikAi.type.caption,
                                             color = colors.onSurfaceMuted,
                                         )
                                     }
@@ -152,13 +152,13 @@ fun SettingsScreen(
                             Spacer(Modifier.height(10.dp))
                             Text(
                                 text = "API KEY",
-                                style = NeoVedic.type.sectionTitle,
+                                style = SikAi.type.sectionTitle,
                                 color = colors.onSurfaceMuted,
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = row.maskedKey ?: if (cfg.apiKeyAlias == null) "Not required" else "Not set",
-                                style = NeoVedic.type.bodyMedium,
+                                style = SikAi.type.bodyMedium,
                                 color = if (row.maskedKey != null) colors.onSurface else colors.onSurfaceMuted,
                             )
 
@@ -166,7 +166,7 @@ fun SettingsScreen(
                             val needsKey = cfg.type !in setOf("qwen", "deepinfra")
                             if (needsKey) {
                                 Spacer(Modifier.height(10.dp))
-                                NeoVedicTextField(
+                                SikAiTextField(
                                     value = drafts[cfg.id].orEmpty(),
                                     onValueChange = { drafts[cfg.id] = it },
                                     label = "Paste new API key",
@@ -175,7 +175,7 @@ fun SettingsScreen(
                                     keyboardType = KeyboardType.Password,
                                 )
                                 Spacer(Modifier.height(8.dp))
-                                NeoVedicButton(
+                                SikAiButton(
                                     text = "Save key",
                                     leadingIcon = Icons.Outlined.Save,
                                     enabled = !drafts[cfg.id].isNullOrBlank(),
@@ -195,9 +195,9 @@ fun SettingsScreen(
             }
 
             item { Spacer(Modifier.height(8.dp)) }
-            item { NeoVedicSectionTitle("Data") }
+            item { SikAiSectionTitle("Data") }
             item {
-                NeoVedicCard(onClick = onOpenDownloads, modifier = Modifier.fillMaxWidth()) {
+                SikAiCard(onClick = onOpenDownloads, modifier = Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Outlined.CloudDownload,
@@ -209,12 +209,12 @@ fun SettingsScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Downloaded materials",
-                                style = NeoVedic.type.titleMedium,
+                                style = SikAi.type.titleMedium,
                                 color = colors.onSurface,
                             )
                             Text(
                                 text = "Manage offline papers and notes",
-                                style = NeoVedic.type.bodySmall,
+                                style = SikAi.type.bodySmall,
                                 color = colors.onSurfaceMuted,
                             )
                         }
@@ -224,7 +224,7 @@ fun SettingsScreen(
 
             item { Spacer(Modifier.height(8.dp)) }
             item {
-                NeoVedicSectionTitle(text = "Recent provider activity", trailing = {
+                SikAiSectionTitle(text = "Recent provider activity", trailing = {
                     Icon(
                         imageVector = Icons.Outlined.History,
                         contentDescription = null,
@@ -235,24 +235,24 @@ fun SettingsScreen(
             }
             if (state.recentLogs.isEmpty()) {
                 item {
-                    NeoVedicEmptyState(
+                    SikAiEmptyState(
                         title = "No activity yet",
                         description = "Provider attempts will appear here once you start chatting or solving.",
                     )
                 }
             } else {
                 items(state.recentLogs, key = { it.id }) { log ->
-                    NeoVedicCard {
+                    SikAiCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = log.providerId,
-                                        style = NeoVedic.type.titleMedium,
+                                        style = SikAi.type.titleMedium,
                                         color = colors.onSurface,
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    NeoVedicStatusPill(
+                                    SikAiStatusPill(
                                         text = if (log.success) "OK" else "FAIL",
                                         accent = if (log.success) colors.accent else colors.danger,
                                     )
@@ -260,21 +260,21 @@ fun SettingsScreen(
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = "${log.task} · ${log.tookMs} ms",
-                                    style = NeoVedic.type.caption,
+                                    style = SikAi.type.caption,
                                     color = colors.onSurfaceMuted,
                                 )
                                 if (!log.success && !log.message.isNullOrBlank()) {
                                     Spacer(Modifier.height(2.dp))
                                     Text(
                                         text = log.message,
-                                        style = NeoVedic.type.caption,
+                                        style = SikAi.type.caption,
                                         color = colors.danger,
                                     )
                                 }
                             }
                             Text(
                                 text = formatTimestamp(log.timestampMillis),
-                                style = NeoVedic.type.caption,
+                                style = SikAi.type.caption,
                                 color = colors.onSurfaceMuted,
                             )
                         }

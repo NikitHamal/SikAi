@@ -27,15 +27,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
-fun NeoVedicSectionTitle(
+fun SikAiSectionTitle(
     text: String,
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -51,7 +51,7 @@ fun NeoVedicSectionTitle(
             Spacer(Modifier.width(8.dp))
             Text(
                 text = text.uppercase(),
-                style = NeoVedic.type.sectionTitle,
+                style = SikAi.type.sectionTitle,
                 color = colors.onSurfaceMuted
             )
         }
@@ -60,22 +60,19 @@ fun NeoVedicSectionTitle(
 }
 
 @Composable
-fun NeoVedicStatusPill(
+fun SikAiStatusPill(
     text: String,
     modifier: Modifier = Modifier,
     accent: Color? = null,
     leadingIcon: ImageVector? = null,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     val pillColor = accent ?: colors.accent
     Row(
         modifier = modifier
-            .clip(NeoVedic.tokens.cornerPill)
+            .clip(SikAi.tokens.cornerPill)
             .background(colors.surfaceMuted)
-            .border(
-                BorderStroke(NeoVedic.tokens.borderHairline, colors.borderSubtle),
-                NeoVedic.tokens.cornerPill
-            )
+
             .padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -97,21 +94,21 @@ fun NeoVedicStatusPill(
         }
         Text(
             text = text,
-            style = NeoVedic.type.label,
+            style = SikAi.type.label,
             color = colors.onSurface
         )
     }
 }
 
 @Composable
-fun NeoVedicEmptyState(
+fun SikAiEmptyState(
     title: String,
     description: String? = null,
     modifier: Modifier = Modifier,
     action: (@Composable () -> Unit)? = null,
     icon: ImageVector = Icons.Outlined.Inbox,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -121,12 +118,9 @@ fun NeoVedicEmptyState(
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .clip(NeoVedic.tokens.cornerSharp)
+                .clip(SikAi.tokens.cornerSharp)
                 .background(colors.surfaceMuted)
-                .border(
-                    BorderStroke(NeoVedic.tokens.borderHairline, colors.borderSubtle),
-                    NeoVedic.tokens.cornerSharp
-                ),
+                ,
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -137,12 +131,12 @@ fun NeoVedicEmptyState(
             )
         }
         Spacer(Modifier.height(16.dp))
-        Text(text = title, style = NeoVedic.type.titleLarge, color = colors.onSurface)
+        Text(text = title, style = SikAi.type.titleLarge, color = colors.onSurface)
         if (description != null) {
             Spacer(Modifier.height(6.dp))
             Text(
                 text = description,
-                style = NeoVedic.type.bodyMedium,
+                style = SikAi.type.bodyMedium,
                 color = colors.onSurfaceMuted
             )
         }
@@ -154,19 +148,19 @@ fun NeoVedicEmptyState(
 }
 
 @Composable
-fun NeoVedicPageHeader(
+fun SikAiPageHeader(
     title: String,
     subtitle: String? = null,
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                horizontal = NeoVedic.tokens.pageHorizontal,
-                vertical = NeoVedic.tokens.space20
+                horizontal = SikAi.tokens.pageHorizontal,
+                vertical = SikAi.tokens.space20
             )
     ) {
         Row(
@@ -178,24 +172,24 @@ fun NeoVedicPageHeader(
                 if (subtitle != null) {
                     Text(
                         text = subtitle.uppercase(),
-                        style = NeoVedic.type.sectionTitle,
+                        style = SikAi.type.sectionTitle,
                         color = colors.accent
                     )
                     Spacer(Modifier.height(4.dp))
                 }
                 Text(
                     text = title,
-                    style = NeoVedic.type.displayMedium,
+                    style = SikAi.type.displayMedium,
                     color = colors.onSurface
                 )
             }
             trailing?.invoke()
         }
     }
-    HorizontalDivider(thickness = 0.5.dp, color = colors.borderSubtle)
+
 }
 
 @Composable
-fun NeoVedicHairline(modifier: Modifier = Modifier) {
-    HorizontalDivider(thickness = 0.5.dp, color = NeoVedic.colors.borderSubtle, modifier = modifier)
+fun SikAiHairline(modifier: Modifier = Modifier) {
+
 }

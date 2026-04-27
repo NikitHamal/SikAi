@@ -26,13 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sikai.learn.domain.model.QuizQuestion
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicSectionTitle
-import com.sikai.learn.ui.components.NeoVedicStatusPill
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiSectionTitle
+import com.sikai.learn.ui.components.SikAiStatusPill
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
 fun QuizzesScreen(
@@ -40,17 +40,17 @@ fun QuizzesScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Quizzes",
             subtitle = "MCQ · MIXED · AI",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
@@ -58,21 +58,21 @@ fun QuizzesScreen(
 
         if (state.questions.isEmpty() && !state.loading) {
             Column(modifier = Modifier.padding(horizontal = tokens.pageHorizontal, vertical = 12.dp)) {
-                NeoVedicSectionTitle("Pick a subject")
+                SikAiSectionTitle("Pick a subject")
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     state.subjects.forEach { subject ->
-                        NeoVedicCard(
+                        SikAiCard(
                             onClick = { viewModel.selectSubject(subject.id) },
                             emphasized = subject.id == state.selectedSubjectId,
                             contentPadding = 10.dp,
                         ) {
-                            Text(subject.displayName, style = NeoVedic.type.label, color = NeoVedic.colors.onSurface)
+                            Text(subject.displayName, style = SikAi.type.label, color = SikAi.colors.onSurface)
                         }
                     }
                 }
                 Spacer(Modifier.height(20.dp))
-                NeoVedicButton(
+                SikAiButton(
                     text = "Start a 8-question quiz",
                     onClick = viewModel::startQuiz,
                     leadingIcon = Icons.Outlined.PlayArrow,
@@ -80,14 +80,14 @@ fun QuizzesScreen(
                 )
                 if (state.errorMessage != null) {
                     Spacer(Modifier.height(8.dp))
-                    Text(state.errorMessage!!, color = NeoVedic.colors.danger, style = NeoVedic.type.bodySmall)
+                    Text(state.errorMessage!!, color = SikAi.colors.danger, style = SikAi.type.bodySmall)
                 }
             }
             return
         }
 
         if (state.loading) {
-            NeoVedicEmptyState(title = "Building quiz…", description = "SikAi is generating MCQs.")
+            SikAiEmptyState(title = "Building quiz…", description = "SikAi is generating MCQs.")
             return
         }
 
@@ -112,7 +112,7 @@ fun QuizzesScreen(
             }
             item {
                 Spacer(Modifier.height(12.dp))
-                NeoVedicButton(
+                SikAiButton(
                     text = "Submit",
                     onClick = viewModel::submit,
                     enabled = state.selected.size == state.questions.size,
@@ -126,13 +126,13 @@ fun QuizzesScreen(
 
 @Composable
 private fun QuestionCard(question: QuizQuestion, selectedIndex: Int?, onSelect: (Int) -> Unit) {
-    NeoVedicCard(modifier = Modifier.fillMaxWidth()) {
+    SikAiCard(modifier = Modifier.fillMaxWidth()) {
         Column {
-            Text(question.prompt, style = NeoVedic.type.titleMedium, color = NeoVedic.colors.onSurface)
+            Text(question.prompt, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
             Spacer(Modifier.height(10.dp))
             question.options.forEachIndexed { idx, option ->
                 val isSelected = selectedIndex == idx
-                NeoVedicCard(
+                SikAiCard(
                     onClick = { onSelect(idx) },
                     emphasized = isSelected,
                     contentPadding = 10.dp,
@@ -141,11 +141,11 @@ private fun QuestionCard(question: QuizQuestion, selectedIndex: Int?, onSelect: 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "${('A' + idx)}.",
-                            style = NeoVedic.type.label,
-                            color = NeoVedic.colors.accent,
+                            style = SikAi.type.label,
+                            color = SikAi.colors.accent,
                             modifier = Modifier.padding(end = 8.dp)
                         )
-                        Text(option, style = NeoVedic.type.bodyMedium, color = NeoVedic.colors.onSurface)
+                        Text(option, style = SikAi.type.bodyMedium, color = SikAi.colors.onSurface)
                     }
                 }
             }
@@ -155,47 +155,47 @@ private fun QuestionCard(question: QuizQuestion, selectedIndex: Int?, onSelect: 
 
 @Composable
 private fun ResultsBlock(state: QuizzesState, onReset: () -> Unit) {
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
     val correct = state.questions.count { state.selected[it.id] == it.correctIndex }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = tokens.pageHorizontal, vertical = 12.dp)) {
-        NeoVedicCard(showCornerMarkers = true, emphasized = true) {
+        SikAiCard( emphasized = true) {
             Column {
-                NeoVedicStatusPill(text = "RESULT")
+                SikAiStatusPill(text = "RESULT")
                 Spacer(Modifier.height(10.dp))
                 Text("$correct / ${state.questions.size} correct",
-                    style = NeoVedic.type.displayMedium,
-                    color = NeoVedic.colors.onSurface)
+                    style = SikAi.type.displayMedium,
+                    color = SikAi.colors.onSurface)
             }
         }
         Spacer(Modifier.height(16.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
             items(state.questions, key = { it.id }) { q ->
                 val chosen = state.selected[q.id]
-                NeoVedicCard {
+                SikAiCard {
                     Column {
-                        Text(q.prompt, style = NeoVedic.type.titleMedium, color = NeoVedic.colors.onSurface)
+                        Text(q.prompt, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
                         Spacer(Modifier.height(6.dp))
                         Text(
                             text = "Correct: ${q.options.getOrNull(q.correctIndex) ?: "—"}",
-                            style = NeoVedic.type.bodySmall,
-                            color = NeoVedic.colors.accent,
+                            style = SikAi.type.bodySmall,
+                            color = SikAi.colors.accent,
                         )
                         if (chosen != null && chosen != q.correctIndex) {
                             Text(
                                 text = "You: ${q.options.getOrNull(chosen) ?: "—"}",
-                                style = NeoVedic.type.bodySmall,
-                                color = NeoVedic.colors.danger,
+                                style = SikAi.type.bodySmall,
+                                color = SikAi.colors.danger,
                             )
                         }
                         if (q.explanation != null) {
                             Spacer(Modifier.height(4.dp))
-                            Text(q.explanation!!, style = NeoVedic.type.bodySmall, color = NeoVedic.colors.onSurfaceMuted)
+                            Text(q.explanation!!, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted)
                         }
                     }
                 }
             }
         }
         Spacer(Modifier.height(12.dp))
-        NeoVedicButton(text = "New quiz", onClick = onReset, leadingIcon = Icons.Outlined.RestartAlt, modifier = Modifier.fillMaxWidth())
+        SikAiButton(text = "New quiz", onClick = onReset, leadingIcon = Icons.Outlined.RestartAlt, modifier = Modifier.fillMaxWidth())
     }
 }

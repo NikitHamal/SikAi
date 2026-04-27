@@ -21,24 +21,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 
-data class NeoVedicNavItem(
+data class SikAiNavItem(
     val key: String,
     val label: String,
     val icon: ImageVector,
 )
 
 @Composable
-fun NeoVedicBottomNav(
-    items: List<NeoVedicNavItem>,
+fun SikAiBottomNav(
+    items: List<SikAiNavItem>,
     selectedKey: String,
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     Column(modifier = modifier.fillMaxWidth()) {
-        HorizontalDivider(thickness = 0.5.dp, color = colors.borderSubtle)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,7 +66,7 @@ fun NeoVedicBottomNav(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = item.label,
-                        style = NeoVedic.type.caption,
+                        style = SikAi.type.caption,
                         color = if (selected) colors.onSurface else colors.onSurfaceMuted
                     )
                     if (selected) {

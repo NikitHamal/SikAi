@@ -20,12 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 
 enum class DownloadCardState { Available, Downloading, Downloaded }
 
 @Composable
-fun NeoVedicDownloadCard(
+fun SikAiDownloadCard(
     title: String,
     subtitle: String,
     sizeLabel: String,
@@ -34,23 +34,23 @@ fun NeoVedicDownloadCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val colors = NeoVedic.colors
+    val colors = SikAi.colors
     val (icon, label) = when (state) {
         DownloadCardState.Available -> Icons.Outlined.CloudDownload to "GET"
         DownloadCardState.Downloading -> Icons.Outlined.HourglassTop to "FETCHING"
         DownloadCardState.Downloaded -> Icons.Outlined.CheckCircle to "OFFLINE"
     }
-    NeoVedicCard(modifier = modifier.fillMaxWidth(), onClick = onClick) {
+    SikAiCard(modifier = modifier.fillMaxWidth(), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, style = NeoVedic.type.titleMedium, color = colors.onSurface)
+                Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface)
                 Spacer(Modifier.height(4.dp))
-                Text(text = subtitle, style = NeoVedic.type.bodySmall, color = colors.onSurfaceMuted)
+                Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    NeoVedicStatusPill(text = sizeLabel)
+                    SikAiStatusPill(text = sizeLabel)
                     Spacer(Modifier.width(8.dp))
-                    NeoVedicStatusPill(text = label, accent = colors.accent, leadingIcon = icon)
+                    SikAiStatusPill(text = label, accent = colors.accent, leadingIcon = icon)
                 }
                 if (state == DownloadCardState.Downloading && progress != null) {
                     Spacer(Modifier.height(10.dp))

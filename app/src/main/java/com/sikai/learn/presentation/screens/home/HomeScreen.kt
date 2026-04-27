@@ -30,11 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicSectionTitle
-import com.sikai.learn.ui.components.NeoVedicStatusPill
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiSectionTitle
+import com.sikai.learn.ui.components.SikAiStatusPill
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
 fun HomeScreen(
@@ -49,17 +49,17 @@ fun HomeScreen(
     onOpenDownloads: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = NeoVedic.colors
-    val tokens = NeoVedic.tokens
+    val colors = SikAi.colors
+    val tokens = SikAi.tokens
     val classLabel = state.profile?.classLevel?.let { "Class $it" } ?: "Welcome"
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = classLabel,
             subtitle = "SIKAI · LEARN WITH AI",
             trailing = {
                 if (state.daysToExam != null) {
-                    NeoVedicStatusPill(text = "${state.daysToExam} days to exam")
+                    SikAiStatusPill(text = "${state.daysToExam} days to exam")
                 }
             }
         )
@@ -70,18 +70,18 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                NeoVedicCard(showCornerMarkers = true, contentPadding = 18.dp) {
+                SikAiCard( contentPadding = 18.dp) {
                     Column {
                         Text(
                             text = "Today's focus",
-                            style = NeoVedic.type.sectionTitle,
+                            style = SikAi.type.sectionTitle,
                             color = colors.accent
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
                             text = state.profile?.let { "Keep going on ${it.studyMinutesPerDay} mins / day" }
                                 ?: "Sign in to start a streak",
-                            style = NeoVedic.type.titleLarge,
+                            style = SikAi.type.titleLarge,
                             color = colors.onSurface
                         )
                         Spacer(Modifier.height(10.dp))
@@ -89,14 +89,14 @@ fun HomeScreen(
                             text = if (state.subjectNames.isNotEmpty())
                                 state.subjectNames.joinToString(" · ")
                             else "No subjects selected yet.",
-                            style = NeoVedic.type.bodyMedium,
+                            style = SikAi.type.bodyMedium,
                             color = colors.onSurfaceMuted
                         )
                     }
                 }
             }
             item { Spacer(Modifier.height(6.dp)) }
-            item { NeoVedicSectionTitle("Quick actions") }
+            item { SikAiSectionTitle("Quick actions") }
             item {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -140,7 +140,7 @@ fun HomeScreen(
                 }
             }
             item { Spacer(Modifier.height(6.dp)) }
-            item { NeoVedicSectionTitle("Tools") }
+            item { SikAiSectionTitle("Tools") }
             item {
                 NavRow(icon = Icons.Outlined.Schedule, title = "Study plan", subtitle = "Day-by-day map", onClick = onOpenStudyPlan)
             }
@@ -166,29 +166,29 @@ private fun QuickAction(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val colors = NeoVedic.colors
-    NeoVedicCard(onClick = onClick, modifier = modifier, showCornerMarkers = true) {
+    val colors = SikAi.colors
+    SikAiCard(onClick = onClick, modifier = modifier) {
         Column {
             Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
             Spacer(Modifier.height(12.dp))
-            Text(text = title, style = NeoVedic.type.titleMedium, color = colors.onSurface)
+            Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface)
             Spacer(Modifier.height(2.dp))
-            Text(text = subtitle, style = NeoVedic.type.bodySmall, color = colors.onSurfaceMuted)
+            Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
         }
     }
 }
 
 @Composable
 private fun NavRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
-    val colors = NeoVedic.colors
-    NeoVedicCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    val colors = SikAi.colors
+    SikAiCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
             Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = NeoVedic.type.titleMedium, color = colors.onSurface)
+                Text(title, style = SikAi.type.titleMedium, color = colors.onSurface)
                 Spacer(Modifier.height(2.dp))
-                Text(subtitle, style = NeoVedic.type.bodySmall, color = colors.onSurfaceMuted)
+                Text(subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
             }
             Icon(imageVector = Icons.Outlined.Article, contentDescription = null, tint = colors.borderStrong)
         }

@@ -31,15 +31,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sikai.learn.domain.model.AiMode
-import com.sikai.learn.ui.components.NeoVedicAiAnswerCard
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicHairline
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicStatusPill
-import com.sikai.learn.ui.components.NeoVedicTextField
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiAiAnswerCard
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiHairline
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiStatusPill
+import com.sikai.learn.ui.components.SikAiTextField
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
 fun AiTutorScreen(
@@ -47,7 +47,7 @@ fun AiTutorScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
     var draft by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
@@ -56,14 +56,14 @@ fun AiTutorScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "AI Tutor",
             subtitle = "ASK · LEARN · UNDERSTAND",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
@@ -81,7 +81,7 @@ fun AiTutorScreen(
         ) {
             if (state.messages.isEmpty()) {
                 item {
-                    NeoVedicEmptyState(
+                    SikAiEmptyState(
                         title = "Ask anything",
                         description = "Type a question about your subject. SikAi explains in plain language.",
                     )
@@ -89,15 +89,15 @@ fun AiTutorScreen(
             }
             items(state.messages, key = { it.id }) { msg ->
                 if (msg.fromUser) {
-                    NeoVedicCard(modifier = Modifier.fillMaxWidth()) {
+                    SikAiCard(modifier = Modifier.fillMaxWidth()) {
                         Column {
-                            Text("YOU", style = NeoVedic.type.sectionTitle, color = NeoVedic.colors.onSurfaceMuted)
+                            Text("YOU", style = SikAi.type.sectionTitle, color = SikAi.colors.onSurfaceMuted)
                             Spacer(Modifier.height(6.dp))
-                            Text(msg.text, style = NeoVedic.type.bodyLarge, color = NeoVedic.colors.onSurface)
+                            Text(msg.text, style = SikAi.type.bodyLarge, color = SikAi.colors.onSurface)
                         }
                     }
                 } else {
-                    NeoVedicAiAnswerCard(
+                    SikAiAiAnswerCard(
                         markdown = msg.text,
                         providerLabel = msg.providerLabel ?: (if (msg.isError) "ERROR" else "ASSISTANT"),
                         modelLabel = null,
@@ -107,21 +107,21 @@ fun AiTutorScreen(
             }
             if (state.sending) {
                 item {
-                    NeoVedicCard {
+                    SikAiCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            NeoVedicStatusPill(text = "Thinking…")
+                            SikAiStatusPill(text = "Thinking…")
                         }
                     }
                 }
             }
         }
 
-        NeoVedicHairline()
+        SikAiHairline()
         Row(
             modifier = Modifier.fillMaxWidth().padding(tokens.space12),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            NeoVedicTextField(
+            SikAiTextField(
                 value = draft,
                 onValueChange = { draft = it },
                 placeholder = "Ask a question…",
@@ -129,7 +129,7 @@ fun AiTutorScreen(
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(8.dp))
-            NeoVedicButton(
+            SikAiButton(
                 text = "Send",
                 onClick = {
                     val toSend = draft.trim()
@@ -147,7 +147,7 @@ fun AiTutorScreen(
 
 @Composable
 private fun ModeRow(selected: AiMode, onSelect: (AiMode) -> Unit) {
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = tokens.pageHorizontal, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -161,12 +161,12 @@ private fun ModeRow(selected: AiMode, onSelect: (AiMode) -> Unit) {
                 AiMode.StepByStep -> "Steps"
             }
             val isSelected = mode == selected
-            NeoVedicCard(
+            SikAiCard(
                 onClick = { onSelect(mode) },
                 emphasized = isSelected,
                 contentPadding = 8.dp,
             ) {
-                Text(label.uppercase(), style = NeoVedic.type.label, color = NeoVedic.colors.onSurface)
+                Text(label.uppercase(), style = SikAi.type.label, color = SikAi.colors.onSurface)
             }
         }
     }

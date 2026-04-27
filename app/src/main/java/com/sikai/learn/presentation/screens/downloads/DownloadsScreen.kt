@@ -24,12 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sikai.learn.data.download.DownloadProgress
 import com.sikai.learn.ui.components.DownloadCardState
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicButtonVariant
-import com.sikai.learn.ui.components.NeoVedicDownloadCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiButtonVariant
+import com.sikai.learn.ui.components.SikAiDownloadCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.theme.SikAi
 import com.sikai.learn.util.formatBytes
 
 @Composable
@@ -38,26 +38,26 @@ fun DownloadsScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Downloads",
             subtitle = "OFFLINE READY · VERIFIED",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
         )
         Row(modifier = Modifier.fillMaxWidth().padding(tokens.pageHorizontal)) {
-            NeoVedicButton(
+            SikAiButton(
                 text = if (state.refreshing) "Syncing…" else "Sync manifest",
                 onClick = viewModel::refresh,
-                variant = NeoVedicButtonVariant.Secondary,
+                variant = SikAiButtonVariant.Secondary,
                 leadingIcon = Icons.Outlined.CloudSync,
                 enabled = !state.refreshing,
             )
@@ -66,14 +66,14 @@ fun DownloadsScreen(
         if (state.errorMessage != null) {
             Text(
                 text = state.errorMessage ?: "",
-                style = NeoVedic.type.bodySmall,
-                color = NeoVedic.colors.danger,
+                style = SikAi.type.bodySmall,
+                color = SikAi.colors.danger,
                 modifier = Modifier.padding(horizontal = tokens.pageHorizontal)
             )
         }
 
         if (state.rows.isEmpty()) {
-            NeoVedicEmptyState(
+            SikAiEmptyState(
                 title = "Nothing to download yet",
                 description = "Sync the manifest to see textbooks, past papers, and MCQ packs available for offline use."
             )
@@ -92,7 +92,7 @@ fun DownloadsScreen(
                             DownloadCardState.Downloading
                         else -> DownloadCardState.Available
                     }
-                    NeoVedicDownloadCard(
+                    SikAiDownloadCard(
                         title = row.title,
                         subtitle = listOfNotNull(
                             row.subject.takeIf { it.isNotBlank() },

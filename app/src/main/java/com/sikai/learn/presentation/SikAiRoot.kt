@@ -30,9 +30,9 @@ import com.sikai.learn.presentation.screens.quizzes.QuizzesScreen
 import com.sikai.learn.presentation.screens.settings.SettingsScreen
 import com.sikai.learn.presentation.screens.snap.SnapAndSolveScreen
 import com.sikai.learn.presentation.screens.studyplan.StudyPlanScreen
-import com.sikai.learn.ui.components.NeoVedicBottomNav
-import com.sikai.learn.ui.components.NeoVedicNavItem
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiBottomNav
+import com.sikai.learn.ui.components.SikAiNavItem
+import com.sikai.learn.ui.theme.SikAi
 
 /**
  * Top-level navigation. The bottom tabs cover the daily-driver surfaces; the
@@ -54,11 +54,11 @@ object Routes {
 }
 
 private val tabs = listOf(
-    NeoVedicNavItem(Routes.Home, "Home", Icons.Outlined.Home),
-    NeoVedicNavItem(Routes.AiTutor, "Tutor", Icons.Outlined.Chat),
-    NeoVedicNavItem(Routes.Snap, "Snap", Icons.Outlined.CameraAlt),
-    NeoVedicNavItem(Routes.PastPapers, "Papers", Icons.Outlined.AutoStories),
-    NeoVedicNavItem(Routes.Settings, "Settings", Icons.Outlined.Settings),
+    SikAiNavItem(Routes.Home, "Home", Icons.Outlined.Home),
+    SikAiNavItem(Routes.AiTutor, "Tutor", Icons.Outlined.Chat),
+    SikAiNavItem(Routes.Snap, "Snap", Icons.Outlined.CameraAlt),
+    SikAiNavItem(Routes.PastPapers, "Papers", Icons.Outlined.AutoStories),
+    SikAiNavItem(Routes.Settings, "Settings", Icons.Outlined.Settings),
 )
 
 @Composable
@@ -73,7 +73,7 @@ fun SikAiRoot(bootState: BootState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(NeoVedic.colors.background)
+            .background(SikAi.colors.background)
     ) {
         Box(modifier = Modifier.weight(1f)) {
             NavHost(navController = navController, startDestination = startDestination) {
@@ -117,7 +117,7 @@ fun SikAiRoot(bootState: BootState) {
             }
         }
         if (showTabs && bootState.isOnboarded) {
-            NeoVedicBottomNav(
+            SikAiBottomNav(
                 items = tabs,
                 selectedKey = currentRoute,
                 onSelect = { key ->

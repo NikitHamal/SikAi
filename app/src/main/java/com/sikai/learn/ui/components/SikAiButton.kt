@@ -21,28 +21,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.theme.SikAi
 
-enum class NeoVedicButtonVariant { Primary, Secondary, Ghost, Danger }
+enum class SikAiButtonVariant { Primary, Secondary, Ghost, Danger }
 
 @Composable
-fun NeoVedicButton(
+fun SikAiButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    variant: NeoVedicButtonVariant = NeoVedicButtonVariant.Primary,
+    variant: SikAiButtonVariant = SikAiButtonVariant.Primary,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
 ) {
-    val colors = NeoVedic.colors
-    val tokens = NeoVedic.tokens
-    val type = NeoVedic.type
+    val colors = SikAi.colors
+    val tokens = SikAi.tokens
+    val type = SikAi.type
 
     val (bg, fg, borderColor) = when (variant) {
-        NeoVedicButtonVariant.Primary -> Triple(colors.primary, colors.onPrimary, Color.Transparent)
-        NeoVedicButtonVariant.Secondary -> Triple(colors.surface, colors.onSurface, colors.borderStrong)
-        NeoVedicButtonVariant.Ghost -> Triple(Color.Transparent, colors.onSurface, Color.Transparent)
-        NeoVedicButtonVariant.Danger -> Triple(colors.danger, Color.White, Color.Transparent)
+        SikAiButtonVariant.Primary -> Triple(colors.primary, colors.onPrimary, Color.Transparent)
+        SikAiButtonVariant.Secondary -> Triple(colors.surface, colors.onSurface, colors.borderStrong)
+        SikAiButtonVariant.Ghost -> Triple(Color.Transparent, colors.onSurface, Color.Transparent)
+        SikAiButtonVariant.Danger -> Triple(colors.danger, Color.White, Color.Transparent)
     }
 
     val effectiveBg = if (enabled) bg else colors.surfaceMuted
@@ -53,11 +53,11 @@ fun NeoVedicButton(
     Box(
         modifier = modifier
             .heightIn(min = tokens.touchTarget)
-            .clip(tokens.cornerSharp)
+            .clip(tokens.cornerPill)
             .background(effectiveBg)
             .let {
-                if (variant == NeoVedicButtonVariant.Secondary) {
-                    it.border(BorderStroke(tokens.borderHairline, borderColor), tokens.cornerSharp)
+                if (variant == SikAiButtonVariant.Secondary) {
+                    it.border(BorderStroke(1.dp, borderColor), tokens.cornerPill)
                 } else it
             }
             .clickable(
@@ -66,7 +66,7 @@ fun NeoVedicButton(
                 enabled = enabled,
                 onClick = onClick
             )
-            .padding(horizontal = 18.dp, vertical = 12.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -77,11 +77,11 @@ fun NeoVedicButton(
                     tint = effectiveFg,
                     modifier = Modifier.height(18.dp)
                 )
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
             }
             Text(
                 text = text,
-                style = type.titleMedium,
+                style = type.label,
                 color = effectiveFg
             )
         }

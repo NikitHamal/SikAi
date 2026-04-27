@@ -26,13 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicButtonVariant
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicTextField
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiButtonVariant
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiTextField
+import com.sikai.learn.ui.theme.SikAi
 import com.sikai.learn.util.formatTimestamp
 
 @Composable
@@ -41,17 +41,17 @@ fun NotesScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Notes",
             subtitle = "SAVE WHAT MATTERS",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
@@ -59,14 +59,14 @@ fun NotesScreen(
 
         if (state.editingId != null) {
             Column(modifier = Modifier.padding(tokens.pageHorizontal)) {
-                NeoVedicTextField(
+                SikAiTextField(
                     value = state.draftTitle,
                     onValueChange = viewModel::setTitle,
                     label = "Title",
                     placeholder = "Title",
                 )
                 Spacer(Modifier.height(12.dp))
-                NeoVedicTextField(
+                SikAiTextField(
                     value = state.draftBody,
                     onValueChange = viewModel::setBody,
                     label = "Body",
@@ -75,20 +75,20 @@ fun NotesScreen(
                 )
                 Spacer(Modifier.height(12.dp))
                 Row {
-                    NeoVedicButton(
+                    SikAiButton(
                         text = "Cancel",
                         onClick = viewModel::cancel,
-                        variant = NeoVedicButtonVariant.Secondary,
+                        variant = SikAiButtonVariant.Secondary,
                     )
                     Spacer(Modifier.width(10.dp))
-                    NeoVedicButton(text = "Save", onClick = viewModel::save)
+                    SikAiButton(text = "Save", onClick = viewModel::save)
                 }
             }
             return
         }
 
         Row(modifier = Modifier.fillMaxWidth().padding(tokens.pageHorizontal)) {
-            NeoVedicButton(
+            SikAiButton(
                 text = "New note",
                 onClick = viewModel::startNew,
                 leadingIcon = Icons.Outlined.Add,
@@ -96,7 +96,7 @@ fun NotesScreen(
         }
 
         if (state.notes.isEmpty()) {
-            NeoVedicEmptyState(title = "No notes yet", description = "Capture key formulas, doubts, or AI replies you want to keep.")
+            SikAiEmptyState(title = "No notes yet", description = "Capture key formulas, doubts, or AI replies you want to keep.")
         } else {
             LazyColumn(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -105,27 +105,27 @@ fun NotesScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.notes, key = { it.id }) { note ->
-                    NeoVedicCard(onClick = { viewModel.edit(note.id) }, modifier = Modifier.fillMaxWidth()) {
+                    SikAiCard(onClick = { viewModel.edit(note.id) }, modifier = Modifier.fillMaxWidth()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(note.title, style = NeoVedic.type.titleMedium, color = NeoVedic.colors.onSurface)
+                                Text(note.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = note.body.take(120).ifBlank { "(no body)" },
-                                    style = NeoVedic.type.bodySmall,
-                                    color = NeoVedic.colors.onSurfaceMuted,
+                                    style = SikAi.type.bodySmall,
+                                    color = SikAi.colors.onSurfaceMuted,
                                 )
                                 Spacer(Modifier.height(6.dp))
                                 Text(
                                     text = formatTimestamp(note.updatedAtMillis),
-                                    style = NeoVedic.type.caption,
-                                    color = NeoVedic.colors.onSurfaceMuted,
+                                    style = SikAi.type.caption,
+                                    color = SikAi.colors.onSurfaceMuted,
                                 )
                             }
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
                                 contentDescription = "Delete",
-                                tint = NeoVedic.colors.danger,
+                                tint = SikAi.colors.danger,
                                 modifier = Modifier.size(20.dp).clickable { viewModel.delete(note.id) }
                             )
                         }

@@ -21,12 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicSectionTitle
-import com.sikai.learn.ui.components.NeoVedicStatusPill
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiSectionTitle
+import com.sikai.learn.ui.components.SikAiStatusPill
+import com.sikai.learn.ui.theme.SikAi
 import com.sikai.learn.util.formatTimestamp
 
 @Composable
@@ -35,17 +35,17 @@ fun ProgressScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Progress",
             subtitle = "STREAK · ATTEMPTS · WEAK SPOTS",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
@@ -57,64 +57,64 @@ fun ProgressScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                NeoVedicCard(showCornerMarkers = true) {
+                SikAiCard() {
                     Column {
-                        NeoVedicStatusPill(text = "STREAK")
+                        SikAiStatusPill(text = "STREAK")
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = "${state.streakDays} day${if (state.streakDays == 1) "" else "s"} active",
-                            style = NeoVedic.type.displayMedium,
-                            color = NeoVedic.colors.onSurface,
+                            style = SikAi.type.displayMedium,
+                            color = SikAi.colors.onSurface,
                         )
                     }
                 }
             }
-            item { NeoVedicSectionTitle("Recent attempts") }
+            item { SikAiSectionTitle("Recent attempts") }
             if (state.attempts.isEmpty()) {
                 item {
-                    NeoVedicEmptyState(
+                    SikAiEmptyState(
                         title = "No quiz attempts yet",
                         description = "Take a quiz from the Quizzes tab to see your scores here."
                     )
                 }
             } else {
                 items(state.attempts, key = { it.id }) { attempt ->
-                    NeoVedicCard {
+                    SikAiCard {
                         Row {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(attempt.subject, style = NeoVedic.type.titleMedium, color = NeoVedic.colors.onSurface)
+                                Text(attempt.subject, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = formatTimestamp(attempt.finishedAtMillis),
-                                    style = NeoVedic.type.caption,
-                                    color = NeoVedic.colors.onSurfaceMuted,
+                                    style = SikAi.type.caption,
+                                    color = SikAi.colors.onSurfaceMuted,
                                 )
                             }
                             Text(
                                 text = "${attempt.correct}/${attempt.total}",
-                                style = NeoVedic.type.titleLarge,
-                                color = NeoVedic.colors.accent,
+                                style = SikAi.type.titleLarge,
+                                color = SikAi.colors.accent,
                             )
                         }
                     }
                 }
             }
             item { Spacer(Modifier.height(8.dp)) }
-            item { NeoVedicSectionTitle("Weak topics") }
+            item { SikAiSectionTitle("Weak topics") }
             if (state.weakTopics.isEmpty()) {
                 item {
-                    NeoVedicEmptyState(title = "Nothing flagged yet", description = "Take a few quizzes and SikAi will surface weak topics here.")
+                    SikAiEmptyState(title = "Nothing flagged yet", description = "Take a few quizzes and SikAi will surface weak topics here.")
                 }
             } else {
                 items(state.weakTopics, key = { it.id }) { row ->
-                    NeoVedicCard {
+                    SikAiCard {
                         Row {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(row.topic, style = NeoVedic.type.titleMedium, color = NeoVedic.colors.onSurface)
+                                Text(row.topic, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
                                 Spacer(Modifier.height(2.dp))
-                                Text(row.subject, style = NeoVedic.type.bodySmall, color = NeoVedic.colors.onSurfaceMuted)
+                                Text(row.subject, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted)
                             }
-                            NeoVedicStatusPill(text = "${(row.strengthScore * 100).toInt()}%", accent = NeoVedic.colors.danger)
+                            SikAiStatusPill(text = "${(row.strengthScore * 100).toInt()}%", accent = SikAi.colors.danger)
                         }
                     }
                 }

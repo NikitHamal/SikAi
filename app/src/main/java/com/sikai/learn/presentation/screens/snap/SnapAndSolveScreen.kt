@@ -35,14 +35,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.sikai.learn.ui.components.NeoVedicAiAnswerCard
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicButtonVariant
-import com.sikai.learn.ui.components.NeoVedicCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.components.NeoVedicTextField
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiAiAnswerCard
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiButtonVariant
+import com.sikai.learn.ui.components.SikAiCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.components.SikAiTextField
+import com.sikai.learn.ui.theme.SikAi
 
 @Composable
 fun SnapAndSolveScreen(
@@ -50,7 +50,7 @@ fun SnapAndSolveScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
     var extraPrompt by remember { mutableStateOf("") }
 
     val pickPhoto = rememberLauncherForActivityResult(
@@ -64,14 +64,14 @@ fun SnapAndSolveScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Snap & Solve",
             subtitle = "PHOTO · MULTIMODAL · WORK SHOWN",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
@@ -79,12 +79,12 @@ fun SnapAndSolveScreen(
 
         Column(modifier = Modifier.padding(horizontal = tokens.pageHorizontal, vertical = 12.dp)) {
             if (state.attachmentUri == null) {
-                NeoVedicEmptyState(
+                SikAiEmptyState(
                     title = "Attach a question",
                     description = "Pick an image or PDF — SikAi sends it to a multimodal provider so the work gets done end-to-end."
                 )
                 Spacer(Modifier.height(16.dp))
-                NeoVedicButton(
+                SikAiButton(
                     text = "Pick from gallery",
                     onClick = {
                         pickPhoto.launch(
@@ -95,7 +95,7 @@ fun SnapAndSolveScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {
-                NeoVedicCard(modifier = Modifier.fillMaxWidth(), showCornerMarkers = true) {
+                SikAiCard(modifier = Modifier.fillMaxWidth()) {
                     Column {
                         AsyncImage(
                             model = state.attachmentUri,
@@ -106,18 +106,18 @@ fun SnapAndSolveScreen(
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = state.fileName ?: "attachment",
-                            style = NeoVedic.type.bodyMedium,
-                            color = NeoVedic.colors.onSurface
+                            style = SikAi.type.bodyMedium,
+                            color = SikAi.colors.onSurface
                         )
                         Text(
                             text = state.mimeType ?: "image/jpeg",
-                            style = NeoVedic.type.caption,
-                            color = NeoVedic.colors.onSurfaceMuted
+                            style = SikAi.type.caption,
+                            color = SikAi.colors.onSurfaceMuted
                         )
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                NeoVedicTextField(
+                SikAiTextField(
                     value = extraPrompt,
                     onValueChange = { extraPrompt = it },
                     label = "Extra instruction (optional)",
@@ -126,17 +126,17 @@ fun SnapAndSolveScreen(
                 )
                 Spacer(Modifier.height(12.dp))
                 Row {
-                    NeoVedicButton(
+                    SikAiButton(
                         text = "Replace",
                         onClick = {
                             pickPhoto.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                             )
                         },
-                        variant = NeoVedicButtonVariant.Secondary,
+                        variant = SikAiButtonVariant.Secondary,
                     )
                     Spacer(Modifier.width(10.dp))
-                    NeoVedicButton(
+                    SikAiButton(
                         text = if (state.solving) "Solving…" else "Solve with AI",
                         onClick = { viewModel.solve(extraPrompt.ifBlank { null }) },
                         leadingIcon = Icons.Outlined.AutoFixHigh,
@@ -147,18 +147,18 @@ fun SnapAndSolveScreen(
 
             if (state.errorMessage != null) {
                 Spacer(Modifier.height(12.dp))
-                NeoVedicCard(emphasized = true) {
+                SikAiCard(emphasized = true) {
                     Text(
                         text = state.errorMessage ?: "",
-                        style = NeoVedic.type.bodyMedium,
-                        color = NeoVedic.colors.danger
+                        style = SikAi.type.bodyMedium,
+                        color = SikAi.colors.danger
                     )
                 }
             }
 
             if (state.answerMarkdown != null) {
                 Spacer(Modifier.height(16.dp))
-                NeoVedicAiAnswerCard(
+                SikAiAiAnswerCard(
                     markdown = state.answerMarkdown!!,
                     providerLabel = state.providerLabel ?: "ASSISTANT",
                     modelLabel = null,

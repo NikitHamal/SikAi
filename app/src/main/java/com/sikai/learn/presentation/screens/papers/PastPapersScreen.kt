@@ -25,12 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sikai.learn.ui.components.DownloadCardState
-import com.sikai.learn.ui.components.NeoVedicButton
-import com.sikai.learn.ui.components.NeoVedicButtonVariant
-import com.sikai.learn.ui.components.NeoVedicDownloadCard
-import com.sikai.learn.ui.components.NeoVedicEmptyState
-import com.sikai.learn.ui.components.NeoVedicPageHeader
-import com.sikai.learn.ui.theme.NeoVedic
+import com.sikai.learn.ui.components.SikAiButton
+import com.sikai.learn.ui.components.SikAiButtonVariant
+import com.sikai.learn.ui.components.SikAiDownloadCard
+import com.sikai.learn.ui.components.SikAiEmptyState
+import com.sikai.learn.ui.components.SikAiPageHeader
+import com.sikai.learn.ui.theme.SikAi
 import com.sikai.learn.util.formatBytes
 
 @Composable
@@ -40,48 +40,48 @@ fun PastPapersScreen(
     onOpenDownloads: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val tokens = NeoVedic.tokens
+    val tokens = SikAi.tokens
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NeoVedicPageHeader(
+        SikAiPageHeader(
             title = "Past Papers",
             subtitle = state.classLevel?.let { "CLASS $it · OFFICIAL ARCHIVE" } ?: "PICK A CLASS FIRST",
             trailing = {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = NeoVedic.colors.onSurface,
+                    tint = SikAi.colors.onSurface,
                     modifier = Modifier.size(28.dp).clickable(onClick = onBack)
                 )
             }
         )
         Row(modifier = Modifier.fillMaxWidth().padding(tokens.pageHorizontal)) {
-            NeoVedicButton(
+            SikAiButton(
                 text = if (state.refreshing) "Syncing…" else "Sync from server",
                 onClick = viewModel::refresh,
-                variant = NeoVedicButtonVariant.Secondary,
+                variant = SikAiButtonVariant.Secondary,
                 leadingIcon = Icons.Outlined.CloudSync,
                 enabled = state.classLevel != null && !state.refreshing,
             )
             Spacer(Modifier.weight(1f))
-            NeoVedicButton(
+            SikAiButton(
                 text = "Downloads",
                 onClick = onOpenDownloads,
-                variant = NeoVedicButtonVariant.Ghost,
+                variant = SikAiButtonVariant.Ghost,
             )
         }
 
         if (state.errorMessage != null) {
             Text(
                 text = state.errorMessage ?: "",
-                style = NeoVedic.type.bodySmall,
-                color = NeoVedic.colors.danger,
+                style = SikAi.type.bodySmall,
+                color = SikAi.colors.danger,
                 modifier = Modifier.padding(horizontal = tokens.pageHorizontal)
             )
         }
 
         if (state.papers.isEmpty()) {
-            NeoVedicEmptyState(
+            SikAiEmptyState(
                 title = "No past papers yet",
                 description = "Tap 'Sync from server' to fetch the manifest, then download what you need."
             )
@@ -93,7 +93,7 @@ fun PastPapersScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(state.papers, key = { it.id }) { row ->
-                    NeoVedicDownloadCard(
+                    SikAiDownloadCard(
                         title = row.title,
                         subtitle = listOfNotNull(row.subject, row.year?.toString()).joinToString(" · "),
                         sizeLabel = formatBytes(row.sizeBytes),

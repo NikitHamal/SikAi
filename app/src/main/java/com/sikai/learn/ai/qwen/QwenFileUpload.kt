@@ -131,7 +131,9 @@ internal object QwenFileUpload {
         val contentSha256 = sha256Hex(body)
         val canonicalUri = "/$bucketName/${encodeOssPath(filePath)}"
 
+        val contentMd5 = md5Hex(body)
         val headers = linkedMapOf(
+            "content-md5" to contentMd5,
             "content-type" to contentType,
             "x-oss-content-sha256" to "UNSIGNED-PAYLOAD",
             "x-oss-date" to dateStr,
@@ -139,7 +141,7 @@ internal object QwenFileUpload {
             "x-oss-user-agent" to "aliyun-sdk-js/6.23.0 Chrome 132.0.0.0 on Windows 10 64-bit",
         )
 
-        val signedHeaderKeys = headers.keys.sorted()
+        val signedHeaderKeys = listOf("content-md5", "content-type", "x-oss-content-sha256", "x-oss-date", "x-oss-security-token", "x-oss-user-agent")
         val canonicalHeaders = signedHeaderKeys.joinToString("\n") { k ->
             "$k:${headers[k]}"
         } + "\n"
@@ -184,6 +186,10 @@ internal object QwenFileUpload {
 
     private fun sha256Hex(data: ByteArray): String {
         return MessageDigest.getInstance("SHA-256").digest(data).joinToString("") { "%02x".format(it) }
+    }
+
+    private fun md5Hex(data: ByteArray): String {
+        return MessageDigest.getInstance("MD5").digest(data).joinToString("") { "%02x".format(it) }
     }
 
     private fun encodeOssPath(path: String): String {

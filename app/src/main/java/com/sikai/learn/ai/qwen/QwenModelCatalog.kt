@@ -64,7 +64,10 @@ class QwenModelCatalog @Inject constructor(
             val caps = (meta?.get("capabilities") as? JsonObject)
             val capabilities = mutableSetOf<AiCapability>(AiCapability.TEXT, AiCapability.STREAMING)
             if ((caps?.get("vision") as? JsonPrimitive)?.content?.toBoolean() == true) capabilities += AiCapability.VISION
-            if ((caps?.get("document") as? JsonPrimitive)?.content?.toBoolean() == true) capabilities += AiCapability.PDF
+            if ((caps?.get("document") as? JsonPrimitive)?.content?.toBoolean() == true) {
+                capabilities += AiCapability.PDF
+                capabilities += AiCapability.FILE_UPLOAD
+            }
             if ((caps?.get("thinking") as? JsonPrimitive)?.content?.toBoolean() == true) capabilities += AiCapability.THINKING
             if ((caps?.get("search") as? JsonPrimitive)?.content?.toBoolean() == true) capabilities += AiCapability.SEARCH
             AiModel(
@@ -86,35 +89,43 @@ class QwenModelCatalog @Inject constructor(
         val FALLBACK = listOf(
             AiModel(
                 id = "qwen3.6-plus",
-                displayName = "Qwen 3.6 Plus",
+                displayName = "Qwen3.6-Plus",
                 providerId = "qwen",
                 capabilities = setOf(
                     AiCapability.TEXT, AiCapability.VISION,
-                    AiCapability.PDF, AiCapability.STREAMING, AiCapability.THINKING
+                    AiCapability.PDF, AiCapability.STREAMING,
+                    AiCapability.THINKING, AiCapability.SEARCH,
+                    AiCapability.FILE_UPLOAD,
                 ),
                 maxContext = 1_000_000,
-                description = "Latest Qwen series; multimodal + thinking",
+                description = "Latest Qwen series; multimodal + thinking + search",
                 supportsThinking = true,
                 supportsSearch = true,
             ),
             AiModel(
-                id = "qwen3.5-plus",
-                displayName = "Qwen 3.5 Plus",
-                providerId = "qwen",
-                capabilities = setOf(AiCapability.TEXT, AiCapability.VISION, AiCapability.STREAMING),
-                maxContext = 1_000_000,
-                description = "Stable multimodal Qwen",
-            ),
-            AiModel(
-                id = "qwen3.5-omni-plus",
-                displayName = "Qwen 3.5 Omni Plus",
+                id = "qwen3.6-max-preview",
+                displayName = "Qwen3.6-Max-Preview",
                 providerId = "qwen",
                 capabilities = setOf(
-                    AiCapability.TEXT, AiCapability.VISION, AiCapability.AUDIO,
-                    AiCapability.VIDEO, AiCapability.STREAMING
+                    AiCapability.TEXT, AiCapability.PDF,
+                    AiCapability.STREAMING, AiCapability.THINKING,
                 ),
                 maxContext = 262_144,
-                description = "Native multimodal across text/image/audio/video",
+                description = "Flagship Qwen3.6 model; best text reasoning, no vision yet",
+                supportsThinking = true,
+            ),
+            AiModel(
+                id = "qwen3.6-27b",
+                displayName = "Qwen3.6-27B",
+                providerId = "qwen",
+                capabilities = setOf(
+                    AiCapability.TEXT, AiCapability.VISION,
+                    AiCapability.PDF, AiCapability.STREAMING,
+                    AiCapability.THINKING, AiCapability.FILE_UPLOAD,
+                ),
+                maxContext = 262_144,
+                description = "Open-source 27B dense model; multimodal + thinking",
+                supportsThinking = true,
             ),
         )
     }

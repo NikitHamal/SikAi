@@ -115,18 +115,16 @@ class QwenProvider @Inject constructor(
         model: String,
         token: String?,
     ): AttemptOutcome {
+        // 0) warm up session: visit chat.qwen.ai to collect real cookies
+        session.warmUp(client)
+
         // 1) optional file upload
         val uploadedFiles = mutableListOf<JsonObject>()
-        request.messages.flatMap { it.attachments }.forEach { att ->
+        for (att in request.messages.flatMap { it.attachments }) {
             val uploaded = QwenFileUpload.upload(context, client, session, att)
-                ?: return AttemptOutcome.HardFail(
-                    AiProviderResult.Failure(
-                        AiFailureReason.UnsupportedCapability,
-                        id,
-                        "Qwen file upload failed for ${att.displayName}"
-                    )
-                )
-            uploadedFiles += uploaded
+            if (uploaded != null) {
+                uploadedFiles += uploaded
+            }
         }
 
         // 2) create new chat (per request, simplest model — no resume across calls

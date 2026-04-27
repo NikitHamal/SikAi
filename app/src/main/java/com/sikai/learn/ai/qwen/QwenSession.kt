@@ -76,6 +76,26 @@ internal class QwenSession(
         midTokenUses = 0
     }
 
+    fun warmUp(client: OkHttpClient) {
+        runCatching {
+            val req = Request.Builder()
+                .url("https://chat.qwen.ai/")
+                .header("User-Agent", identity.userAgent)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .header("sec-ch-ua", identity.secChUa)
+                .header("sec-ch-ua-mobile", identity.secChUaMobile)
+                .header("sec-ch-ua-platform", identity.secChUaPlatform)
+                .header("sec-fetch-dest", "document")
+                .header("sec-fetch-mode", "navigate")
+                .header("sec-fetch-site", "none")
+                .build()
+            client.newCall(req).execute().use { resp ->
+                mergeFromSetCookies(resp.headers("Set-Cookie"))
+            }
+        }
+    }
+
     private fun randomHex(len: Int): String =
         UUID.randomUUID().toString().replace("-", "").take(len).padEnd(len, 'a')
 

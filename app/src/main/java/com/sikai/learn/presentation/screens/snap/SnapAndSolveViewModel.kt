@@ -59,7 +59,7 @@ class SnapAndSolveViewModel @Inject constructor(
             _state.update { it.copy(refreshingModels = true) }
             val models = runCatching { modelCatalog.get(forceRefresh) }.getOrDefault(QwenModelCatalog.FALLBACK)
             val visionModels = models.filter { model ->
-                model.capabilities.any { it == AiCapability.VISION || it == AiCapability.FILE_UPLOAD }
+                model.capabilities.any { it == AiCapability.VISION || it == AiCapability.FILE_UPLOAD || it == AiCapability.PDF }
             }
             _state.update {
                 it.copy(

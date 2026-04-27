@@ -272,15 +272,16 @@ private fun ModelSelector(
                         text = {
                             Column {
                                 Text(model.displayName, style = SikAi.type.bodyMedium)
-                                val caps = model.capabilities.mapNotNull {
-                                    when (it) {
-                                        AiCapability.VISION -> "Vision"
-                                        AiCapability.THINKING -> "Thinking"
-                                        AiCapability.PDF -> "PDF"
-                                        AiCapability.SEARCH -> "Search"
-                                        else -> null
+val caps = model.capabilities.mapNotNull {
+                                        when (it) {
+                                            AiCapability.VISION -> "Vision"
+                                            AiCapability.THINKING -> "Thinking"
+                                            AiCapability.PDF -> "PDF"
+                                            AiCapability.SEARCH -> "Search"
+                                            AiCapability.FILE_UPLOAD -> "Upload"
+                                            else -> null
+                                        }
                                     }
-                                }
                                 if (caps.isNotEmpty()) {
                                     Text(
                                         caps.joinToString(" · "),

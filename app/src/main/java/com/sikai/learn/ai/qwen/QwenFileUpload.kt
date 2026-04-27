@@ -52,6 +52,7 @@ internal object QwenFileUpload {
         val stsObj = client.newCall(stsReq).execute().use { resp ->
             session.mergeFromSetCookies(resp.headers("Set-Cookie"))
             val text = resp.body?.string().orEmpty()
+            android.util.Log.d("QwenUpload", "STS response code: ${resp.code}, body: ${text.take(500)}")
             if (!resp.isSuccessful) throw IllegalStateException("STS HTTP ${resp.code}: $text")
             val parsed = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject }
                 .getOrNull() ?: throw IllegalStateException("STS parse failed: $text")
@@ -63,8 +64,13 @@ internal object QwenFileUpload {
         val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_url")
         val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_id")
 
+        android.util.Log.d("QwenUpload", "Uploading to: $fileUrl")
+
         val uploadUrl = fileUrl.substringBefore("?")
         val ossHeaders = buildOssHeaders("PUT", stsObj, mime, bytes)
+        
+        android.util.Log.d("QwenUpload", "OSS headers: $ossHeaders")
+
         val putReq = Request.Builder()
             .url(uploadUrl)
             .put(rawBody(bytes, mime))
@@ -72,7 +78,10 @@ internal object QwenFileUpload {
             .build()
             
         val putCode = runCatching {
-            client.newCall(putReq).execute().use { it.code }
+            client.newCall(putReq).execute().use { 
+                android.util.Log.d("QwenUpload", "PUT response: ${it.code}, ${it.body?.string()?.take(200)}")
+                it.code 
+            }
         }.getOrElse { throw IllegalStateException("OSS upload network error: ${it.message}") }
         
         if (putCode !in 200..299) throw IllegalStateException("OSS upload failed HTTP $putCode")
@@ -158,6 +167,7 @@ internal object QwenFileUpload {
 
         return mapOf(
             "Content-Type" to contentType,
+            "Content-MD5" to contentMd5,
             "x-oss-content-sha256" to "UNSIGNED-PAYLOAD",
             "x-oss-date" to dateStr,
             "x-oss-security-token" to securityToken,

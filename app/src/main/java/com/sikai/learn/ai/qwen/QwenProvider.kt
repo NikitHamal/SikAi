@@ -41,18 +41,12 @@ import javax.inject.Singleton
 
 /**
  * Qwen public chat provider. Mirrors the integration surface in NikitHamal/Flashy:
- *  - identity/cookie rotation
+ *  - identity/cookie rotation with bx-ua fingerprint + ssxmod cookies
  *  - midtoken refresh from sg-wum.alibaba.com
  *  - WAF/captcha/rate-limit retries (up to 5 attempts)
  *  - chat conversation creation, parent_id tracking
  *  - streaming SSE parsing for both "think" and "answer" phases
  *  - inline file upload via the Qwen STS endpoint when an attachment is present
- *
- * NOTE: Flashy implements the full LZW-based bx-ua fingerprint generator. We
- * deliberately ship without that here — it adds ~700 lines of crypto code and
- * Qwen's public visitor flow accepts requests without bx-ua most of the time
- * provided cookies + midtoken + a plausible identity are present. If a request
- * is blocked we surface a clean WAF failure so the fallback chain takes over.
  */
 @Singleton
 class QwenProvider @Inject constructor(
@@ -73,6 +67,26 @@ class QwenProvider @Inject constructor(
         AiCapability.SEARCH,
     )
 
+    @Volatile private var cachedSession: QwenSession? = null
+    private val sessionLock = Any()
+
+    private fun getOrCreateSession(): QwenSession {
+        cachedSession?.let { return it }
+        synchronized(sessionLock) {
+            cachedSession?.let { return it }
+            val s = QwenSession(client).apply { seedSyntheticCookies() }
+            cachedSession = s
+            return s
+        }
+    }
+
+    private fun resetSession() {
+        synchronized(sessionLock) {
+            cachedSession?.reset()
+            cachedSession = null
+        }
+    }
+
     override fun supports(request: AiRequest): Boolean = true
 
     override suspend fun complete(
@@ -80,9 +94,9 @@ class QwenProvider @Inject constructor(
         request: AiRequest,
     ): AiProviderResult = withContext(Dispatchers.IO) {
         val model = pickModel(config, request)
-        val token = config.apiKeyAlias?.let { keyStore.get(it) }   // optional: works without
+        val token = config.apiKeyAlias?.let { keyStore.get(it) }
 
-        val session = QwenSession(client).apply { seedSyntheticCookies() }
+        val session = getOrCreateSession()
         val maxAttempts = 5
         var lastFailure: AiProviderResult.Failure? = null
 
@@ -92,8 +106,8 @@ class QwenProvider @Inject constructor(
             when (attempted) {
                 is AttemptOutcome.Success -> return@withContext attempted.result
                 is AttemptOutcome.RetryWaf -> {
-                    session.reset()
-                    session.seedSyntheticCookies()
+                    resetSession()
+                    val freshSession = getOrCreateSession()
                     delay(BACKOFF_MS * (attempt + 1))
                 }
                 is AttemptOutcome.RetryRate -> delay(BACKOFF_MS * (attempt + 1))
@@ -322,6 +336,8 @@ class QwenProvider @Inject constructor(
         b.header("sec-fetch-site", "same-origin")
         b.header("x-requested-with", "XMLHttpRequest")
         b.header("x-source", "web")
+        val bxUa = session.bxUaHeader()
+        if (bxUa.isNotEmpty()) b.header("bx-ua", bxUa)
         val cookies = session.cookieHeader()
         if (cookies.isNotEmpty()) b.header("Cookie", cookies)
         session.midToken.get()?.let {

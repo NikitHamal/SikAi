@@ -212,6 +212,13 @@ internal object QwenFileUpload {
         b.header("sec-ch-ua", ident.secChUa)
         b.header("sec-ch-ua-mobile", ident.secChUaMobile)
         b.header("sec-ch-ua-platform", ident.secChUaPlatform)
+        b.header("sec-fetch-dest", "empty")
+        b.header("sec-fetch-mode", "cors")
+        b.header("sec-fetch-site", "same-origin")
+        b.header("x-requested-with", "XMLHttpRequest")
+        b.header("x-source", "web")
+        val bxUa = session.bxUaHeader()
+        if (bxUa.isNotEmpty()) b.header("bx-ua", bxUa)
         val cookies = session.cookieHeader()
         if (cookies.isNotEmpty()) b.header("Cookie", cookies)
         session.midToken.get()?.let {

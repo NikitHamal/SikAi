@@ -1,6 +1,8 @@
 package com.sikai.learn.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -29,6 +31,7 @@ fun SikAiCard(
     val baseModifier = modifier
         .clip(shape)
         .background(bg)
+        .border(BorderStroke(1.dp, colors.borderSubtle), shape)
         .let { if (onClick != null) it.clickable(onClick = onClick) else it }
 
     Box(modifier = baseModifier.padding(contentPadding)) {

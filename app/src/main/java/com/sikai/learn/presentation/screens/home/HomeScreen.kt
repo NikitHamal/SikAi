@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Quiz
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -171,9 +172,9 @@ private fun QuickAction(
         Column {
             Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
             Spacer(Modifier.height(12.dp))
-            Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface)
+            Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
-            Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
+            Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -186,9 +187,9 @@ private fun NavRow(icon: ImageVector, title: String, subtitle: String, onClick: 
             Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
             Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = SikAi.type.titleMedium, color = colors.onSurface)
+                Text(title, style = SikAi.type.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(2.dp))
-                Text(subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
+                Text(subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Icon(imageVector = Icons.Outlined.Article, contentDescription = null, tint = colors.borderStrong)
         }

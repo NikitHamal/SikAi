@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -109,7 +110,7 @@ fun StudyPlanScreen(
                                 color = SikAi.colors.onSurfaceMuted,
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(task.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+                            Text(task.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             if (task.description != null) {
                                 Spacer(Modifier.height(4.dp))
                                 Text(

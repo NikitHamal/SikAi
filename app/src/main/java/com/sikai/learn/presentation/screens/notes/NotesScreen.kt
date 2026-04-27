@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -108,7 +109,7 @@ fun NotesScreen(
                     SikAiCard(onClick = { viewModel.edit(note.id) }, modifier = Modifier.fillMaxWidth()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(note.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+                                Text(note.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = note.body.take(120).ifBlank { "(no body)" },

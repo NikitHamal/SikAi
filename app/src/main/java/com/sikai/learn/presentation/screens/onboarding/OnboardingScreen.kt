@@ -37,6 +37,7 @@ import com.sikai.learn.ui.components.SikAiSectionTitle
 import com.sikai.learn.ui.theme.SikAi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun OnboardingScreen(
@@ -155,9 +156,9 @@ private fun ClassPicker(state: OnboardingState, onSelect: (Int) -> Unit) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface)
+                        Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted)
+                        Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (selected) {
                         Icon(Icons.Outlined.Check, contentDescription = null, tint = colors.accent)

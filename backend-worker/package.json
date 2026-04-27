@@ -1,8 +1,8 @@
 {
   "name": "sikai-content-worker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Cloudflare Worker backend for SikAi: serves the content manifest from D1 and proxies file downloads from R2.",
+  "description": "Cloudflare Worker backend for SikAi: content manifest, quiz questions, subjects, analytics, and admin API.",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
@@ -14,6 +14,6 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250115.0",
     "typescript": "^5.5.0",
-    "wrangler": "^3.95.0"
+    "wrangler": "^4.85.0"
   }
 }

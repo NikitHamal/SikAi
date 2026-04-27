@@ -4,8 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sikai.learn.data.repository.AiProviderRepository
+import com.sikai.learn.data.repository.ContentManifestRepository
 import com.sikai.learn.data.repository.SeedBootstrap
 import com.sikai.learn.data.repository.SettingsRepository
+import com.sikai.learn.data.repository.SyncRepository
 import com.sikai.learn.data.repository.UserProfileRepository
 import com.sikai.learn.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +34,8 @@ class BootViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val aiProviders: AiProviderRepository,
     private val seed: SeedBootstrap,
+    private val contentRepo: ContentManifestRepository,
+    private val syncRepo: SyncRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BootState())
@@ -56,6 +60,28 @@ class BootViewModel @Inject constructor(
                             Log.d(TAG, "Boot: seed OK")
                         } catch (e: Exception) {
                             Log.e(TAG, "Seed bootstrap failed", e)
+                        }
+                        try {
+                            Log.d(TAG, "Boot: syncing from remote")
+                            contentRepo.refreshAll()
+                            Log.d(TAG, "Boot: manifest sync OK")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Manifest sync failed", e)
+                        }
+                        try {
+                            Log.d(TAG, "Boot: syncing subjects from remote")
+                            syncRepo.syncSubjects()
+                            Log.d(TAG, "Boot: subjects sync OK")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Subjects sync failed", e)
+                        }
+                        try {
+                            val classLevel = users.get()?.classLevel ?: 10
+                            Log.d(TAG, "Boot: syncing questions for class $classLevel")
+                            syncRepo.syncQuestions(classLevel)
+                            Log.d(TAG, "Boot: questions sync OK")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Questions sync failed", e)
                         }
                     }
                     Log.d(TAG, "Boot: reading user state")

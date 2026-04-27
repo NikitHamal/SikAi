@@ -21,7 +21,6 @@ data class ContentManifestEntry(
     val subject: String,
     val year: Int? = null,
     val fileUrl: String? = null,
-    val fileKey: String? = null,
     val sizeBytes: Long = 0,
     val checksumSha256: String? = null,
     val version: Int = 1,
@@ -32,9 +31,8 @@ data class ContentManifestEntry(
 
 @Serializable
 data class ContentManifest(
-    val version: Int,
-    val updatedAt: Long,
     val items: List<ContentManifestEntry>,
+    val generatedAt: Long = 0,
 )
 
 @Serializable

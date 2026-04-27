@@ -3,26 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2025-01-15"
 workers_dev = true
 
-# Bind a D1 database for the manifest catalogue. Run:
-#   npx wrangler d1 create sikai-content
-# and paste the returned database_id below.
 [[d1_databases]]
 binding = "DB"
 database_name = "sikai-content"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "86db99d2-2eaa-4c7a-9f4d-abfa0c143a99"
 
-# Bind an R2 bucket for the underlying PDF / text assets. Run:
-#   npx wrangler r2 bucket create sikai-content
-[[r2_buckets]]
-binding = "FILES"
-bucket_name = "sikai-content"
+
 
 [vars]
-# Optional shared secret. The Android app does NOT need this for read-only
-# manifest access — leave empty to keep manifest endpoints public. Set to a
-# non-empty value to require `x-sikai-key: <value>` on uploads only.
-ADMIN_TOKEN = ""
-
-# CORS allow-list. The app talks to the worker over HTTPS and does not need
-# CORS, but a permissive default keeps the dev panel happy.
 ALLOWED_ORIGIN = "*"

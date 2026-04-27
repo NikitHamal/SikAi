@@ -3,7 +3,13 @@ package com.sikai.learn.data.repository
 import com.sikai.learn.data.local.ContentManifestDao
 import com.sikai.learn.data.local.ContentManifestEntity
 import com.sikai.learn.data.local.DownloadedFileDao
+import com.sikai.learn.data.local.QuestionDao
+import com.sikai.learn.data.local.QuestionEntity
+import com.sikai.learn.data.local.SubjectDao
+import com.sikai.learn.data.local.SubjectEntity
 import com.sikai.learn.data.remote.BackendApi
+import com.sikai.learn.data.remote.RemoteQuestion
+import com.sikai.learn.data.remote.RemoteSubject
 import com.sikai.learn.domain.model.ContentManifestEntry
 import com.sikai.learn.domain.model.ContentType
 import kotlinx.coroutines.flow.Flow
@@ -12,11 +18,6 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Owns the offline-first manifest of available downloadable content. Refreshes
- * from the Worker backend on demand and reconciles the result into Room. UI
- * always reads from Room — the network is just a writer.
- */
 @Singleton
 class ContentManifestRepository @Inject constructor(
     private val api: BackendApi,
@@ -61,7 +62,6 @@ data class ManifestRow(
     val year: Int?,
     val sizeBytes: Long,
     val fileUrl: String?,
-    val fileKey: String?,
     val checksumSha256: String?,
     val isDownloaded: Boolean,
 )
@@ -75,7 +75,6 @@ private fun ContentManifestEntity.toRow(downloaded: Boolean) = ManifestRow(
     year = year,
     sizeBytes = sizeBytes,
     fileUrl = fileUrl,
-    fileKey = fileKey,
     checksumSha256 = checksumSha256,
     isDownloaded = downloaded,
 )
@@ -94,7 +93,6 @@ private fun ContentManifestEntry.toEntity() = ContentManifestEntity(
     subject = subject,
     year = year,
     fileUrl = fileUrl,
-    fileKey = fileKey,
     sizeBytes = sizeBytes,
     checksumSha256 = checksumSha256,
     version = version,

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.sikai.learn.BuildConfig
 import com.sikai.learn.data.local.ContentManifestDao
 import com.sikai.learn.data.local.DownloadedFileDao
 import com.sikai.learn.data.local.DownloadedFileEntity
@@ -19,10 +18,10 @@ import java.io.FileOutputStream
 import java.security.MessageDigest
 
 /**
- * Background download worker. Streams a manifest entry's fileUrl (or fileKey
- * relative to the backend) to local app-private storage and verifies SHA-256
- * if the manifest provided one. Idempotent — if the file already exists with
- * the matching checksum it short-circuits.
+ * Background download worker. Streams a manifest entry's fileUrl to local
+ * app-private storage and verifies SHA-256 if the manifest provided one.
+ * Idempotent — if the file already exists with the matching checksum it
+ * short-circuits.
  */
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
@@ -51,7 +50,6 @@ class DownloadWorker @AssistedInject constructor(
         }
 
         val url = entry.fileUrl
-            ?: entry.fileKey?.let { resolveBackendUrl("files/$it") }
             ?: return@withContext Result.failure()
 
         return@withContext try {
@@ -83,11 +81,6 @@ class DownloadWorker @AssistedInject constructor(
         checksumSha256 = sha,
         downloadedAtMillis = System.currentTimeMillis(),
     )
-
-    private fun resolveBackendUrl(path: String): String {
-        val base = BuildConfig.BACKEND_BASE_URL.trimEnd('/')
-        return "$base/$path"
-    }
 
     private fun sha256(file: File): String {
         val digest = MessageDigest.getInstance("SHA-256")

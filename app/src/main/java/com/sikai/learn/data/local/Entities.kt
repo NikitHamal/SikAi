@@ -32,7 +32,6 @@ data class ContentManifestEntity(
     val subject: String,
     val year: Int? = null,
     val fileUrl: String? = null,
-    val fileKey: String? = null,
     val sizeBytes: Long,
     val checksumSha256: String? = null,
     val version: Int,

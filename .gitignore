@@ -31,6 +31,15 @@ Thumbs.db
 backend/node_modules/
 backend/.wrangler/
 backend/dist/
+backend-worker/node_modules/
+backend-worker/.wrangler/
+backend-worker/dist/
+
+# Admin dashboard
+admindashboard/node_modules/
+admindashboard/.svelte-kit/
+admindashboard/build/
+admindashboard/.wrangler/
 
 # IMPORTANT: keystore IS intentionally committed for repeatable signed builds
 # Do NOT add app/release-keystore.jks here.

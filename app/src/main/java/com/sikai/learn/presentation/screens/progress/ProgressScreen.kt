@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -110,9 +111,9 @@ fun ProgressScreen(
                     SikAiCard {
                         Row {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(row.topic, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+                                Text(row.topic, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Spacer(Modifier.height(2.dp))
-                                Text(row.subject, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted)
+                                Text(row.subject, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                             SikAiStatusPill(text = "${(row.strengthScore * 100).toInt()}%", accent = SikAi.colors.danger)
                         }

@@ -165,8 +165,14 @@ interface AiProviderConfigDao {
     @Query("SELECT * FROM ai_provider_config WHERE id = :id")
     suspend fun byId(id: String): AiProviderConfigEntity?
 
+    @Query("SELECT * FROM ai_provider_config WHERE id IN (:ids)")
+    suspend fun byIds(ids: List<String>): List<AiProviderConfigEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: AiProviderConfigEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(entities: List<AiProviderConfigEntity>)
 
     @Query("DELETE FROM ai_provider_config WHERE id = :id")
     suspend fun delete(id: String)

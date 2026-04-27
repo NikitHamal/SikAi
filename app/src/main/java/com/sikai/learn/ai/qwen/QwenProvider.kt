@@ -41,7 +41,7 @@ import javax.inject.Singleton
 
 /**
  * Qwen public chat provider. Mirrors the integration surface in NikitHamal/Flashy:
- *  - identity/cookie rotation with bx-ua fingerprint + ssxmod cookies
+ *  - identity/cookie rotation
  *  - midtoken refresh from sg-wum.alibaba.com
  *  - WAF/captcha/rate-limit retries (up to 5 attempts)
  *  - chat conversation creation, parent_id tracking
@@ -67,26 +67,6 @@ class QwenProvider @Inject constructor(
         AiCapability.SEARCH,
     )
 
-    @Volatile private var cachedSession: QwenSession? = null
-    private val sessionLock = Any()
-
-    private fun getOrCreateSession(): QwenSession {
-        cachedSession?.let { return it }
-        synchronized(sessionLock) {
-            cachedSession?.let { return it }
-            val s = QwenSession(client).apply { seedSyntheticCookies() }
-            cachedSession = s
-            return s
-        }
-    }
-
-    private fun resetSession() {
-        synchronized(sessionLock) {
-            cachedSession?.reset()
-            cachedSession = null
-        }
-    }
-
     override fun supports(request: AiRequest): Boolean = true
 
     override suspend fun complete(
@@ -96,7 +76,7 @@ class QwenProvider @Inject constructor(
         val model = pickModel(config, request)
         val token = config.apiKeyAlias?.let { keyStore.get(it) }
 
-        val session = getOrCreateSession()
+        val session = QwenSession(client).apply { seedSyntheticCookies() }
         val maxAttempts = 5
         var lastFailure: AiProviderResult.Failure? = null
 
@@ -106,8 +86,8 @@ class QwenProvider @Inject constructor(
             when (attempted) {
                 is AttemptOutcome.Success -> return@withContext attempted.result
                 is AttemptOutcome.RetryWaf -> {
-                    resetSession()
-                    val freshSession = getOrCreateSession()
+                    session.reset()
+                    session.seedSyntheticCookies()
                     delay(BACKOFF_MS * (attempt + 1))
                 }
                 is AttemptOutcome.RetryRate -> delay(BACKOFF_MS * (attempt + 1))

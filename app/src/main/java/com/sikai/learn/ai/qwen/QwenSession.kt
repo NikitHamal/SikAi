@@ -3,6 +3,7 @@ package com.sikai.learn.ai.qwen
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.atomic.AtomicReference
+import java.util.UUID
 
 internal class QwenSession(
     private val client: OkHttpClient,
@@ -11,13 +12,9 @@ internal class QwenSession(
     val cookieJar: MutableMap<String, String> = mutableMapOf()
     val midToken: AtomicReference<String?> = AtomicReference(null)
     private var midTokenUses: Int = 0
-    private var fingerprint: String = QwenFingerprint.generate()
-    private var bxUa: String = ""
 
     fun seedSyntheticCookies() {
         cookieJar.clear()
-        val fpCookies = QwenFingerprint.generateCookies(fingerprint)
-        cookieJar.putAll(fpCookies)
         cookieJar["acw_tc"] = randomHex(40)
         cookieJar["xlly_s"] = "1"
         cookieJar["cna"] = randomBase64ish(28)
@@ -25,15 +22,12 @@ internal class QwenSession(
         cookieJar["x-ap"] = "ap-southeast-1"
         cookieJar["sca"] = randomHex(8)
         cookieJar["isg"] = randomHex(40)
-        bxUa = QwenFingerprint.generateBxUa(fingerprint)
     }
 
     fun reset() {
         cookieJar.clear()
         midToken.set(null)
         midTokenUses = 0
-        fingerprint = QwenFingerprint.generate()
-        bxUa = ""
     }
 
     fun refreshMidTokenSync(): String? {
@@ -94,11 +88,11 @@ internal class QwenSession(
         }
     }
 
-    fun bxUaHeader(): String = bxUa
+    fun bxUaHeader(): String = ""
 
     private fun randomHex(len: Int): String =
-        java.util.UUID.randomUUID().toString().replace("-", "").take(len).padEnd(len, 'a')
+        UUID.randomUUID().toString().replace("-", "").take(len).padEnd(len, 'a')
 
     private fun randomBase64ish(len: Int): String =
-        java.util.UUID.randomUUID().toString().replace("-", "").take(len)
+        UUID.randomUUID().toString().replace("-", "").take(len)
 }

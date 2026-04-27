@@ -121,9 +121,17 @@ class QwenProvider @Inject constructor(
         // 1) optional file upload
         val uploadedFiles = mutableListOf<JsonObject>()
         for (att in request.messages.flatMap { it.attachments }) {
-            val uploaded = QwenFileUpload.upload(context, client, session, att)
-            if (uploaded != null) {
+            try {
+                val uploaded = QwenFileUpload.upload(context, client, session, att)
                 uploadedFiles += uploaded
+            } catch (e: Exception) {
+                return AttemptOutcome.HardFail(
+                    AiProviderResult.Failure(
+                        AiFailureReason.UnsupportedCapability,
+                        id,
+                        "Qwen file upload failed: ${e.message}"
+                    )
+                )
             }
         }
 

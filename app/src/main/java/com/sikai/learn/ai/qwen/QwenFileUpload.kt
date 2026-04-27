@@ -30,10 +30,10 @@ internal object QwenFileUpload {
         client: OkHttpClient,
         session: QwenSession,
         attachment: AiAttachment,
-    ): JsonObject? {
+    ): JsonObject {
         val bytes = runCatching {
             context.contentResolver.openInputStream(Uri.parse(attachment.uri))!!.use { it.readBytes() }
-        }.getOrNull() ?: return null
+        }.getOrNull() ?: throw IllegalStateException("Could not read attachment URI: ${attachment.uri}")
         val mime = attachment.mimeType.ifBlank { "application/octet-stream" }
         val (fileType, showType, fileClass) = classify(attachment.displayName, mime)
 
@@ -51,17 +51,17 @@ internal object QwenFileUpload {
 
         val stsObj = client.newCall(stsReq).execute().use { resp ->
             session.mergeFromSetCookies(resp.headers("Set-Cookie"))
-            if (!resp.isSuccessful) return null
             val text = resp.body?.string().orEmpty()
+            if (!resp.isSuccessful) throw IllegalStateException("STS HTTP ${resp.code}: $text")
             val parsed = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject }
-                .getOrNull() ?: return null
+                .getOrNull() ?: throw IllegalStateException("STS parse failed: $text")
             val ok = (parsed["success"] as? JsonPrimitive)?.content?.toBoolean() ?: false
-            if (!ok) return null
-            parsed["data"] as? JsonObject ?: return null
+            if (!ok) throw IllegalStateException("STS API error: $text")
+            parsed["data"] as? JsonObject ?: throw IllegalStateException("STS missing data: $text")
         }
 
-        val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: return null
-        val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: return null
+        val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_url")
+        val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_id")
 
         val uploadUrl = fileUrl.substringBefore("?")
         val ossHeaders = buildOssHeaders("PUT", stsObj, mime, bytes)
@@ -70,10 +70,12 @@ internal object QwenFileUpload {
             .put(rawBody(bytes, mime))
             .apply { ossHeaders.forEach { (k, v) -> header(k, v) } }
             .build()
-        val ok = runCatching {
-            client.newCall(putReq).execute().use { it.isSuccessful || it.code == 204 }
-        }.getOrDefault(false)
-        if (!ok) return null
+            
+        val putCode = runCatching {
+            client.newCall(putReq).execute().use { it.code }
+        }.getOrElse { throw IllegalStateException("OSS upload network error: ${it.message}") }
+        
+        if (putCode !in 200..299) throw IllegalStateException("OSS upload failed HTTP $putCode")
 
         val now = System.currentTimeMillis()
         return buildJsonObject {

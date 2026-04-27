@@ -47,7 +47,7 @@ class AiProviderRepository @Inject constructor(
     suspend fun ensureBootstrap() {
         if (dao.count() != 0) return
         val defaults = DefaultAiProviders.builtIns()
-        defaults.forEach { dao.upsert(it.toEntity()) }
+        dao.upsertAll(defaults.map { it.toEntity() })
     }
 
     suspend fun apiKeyMasked(configId: String): String? {
@@ -62,9 +62,13 @@ class AiProviderRepository @Inject constructor(
     }
 
     suspend fun reorder(idsInOrder: List<String>) {
-        idsInOrder.forEachIndexed { index, id ->
-            val cfg = dao.byId(id) ?: return@forEachIndexed
-            if (cfg.priority != index) dao.upsert(cfg.copy(priority = index))
+        val configs = dao.byIds(idsInOrder).associateBy { it.id }
+        val toUpdate = idsInOrder.mapIndexedNotNull { index, id ->
+            val cfg = configs[id] ?: return@mapIndexedNotNull null
+            if (cfg.priority != index) cfg.copy(priority = index) else null
+        }
+        if (toUpdate.isNotEmpty()) {
+            dao.upsertAll(toUpdate)
         }
     }
 }

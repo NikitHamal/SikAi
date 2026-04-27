@@ -1,11 +1,12 @@
 package com.sikai.learn.presentation.screens.snap
 
+import android.content.Context
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoFixHigh
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,7 +34,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.sikai.learn.ui.components.SikAiAiAnswerCard
@@ -43,6 +47,7 @@ import com.sikai.learn.ui.components.SikAiEmptyState
 import com.sikai.learn.ui.components.SikAiPageHeader
 import com.sikai.learn.ui.components.SikAiTextField
 import com.sikai.learn.ui.theme.SikAi
+import java.io.File
 
 @Composable
 fun SnapAndSolveScreen(
@@ -52,11 +57,20 @@ fun SnapAndSolveScreen(
     val state by viewModel.state.collectAsState()
     val tokens = SikAi.tokens
     var extraPrompt by remember { mutableStateOf("") }
+    var cameraPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
 
     val pickPhoto = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) viewModel.setAttachment(uri, null)
+    }
+
+    val takePhoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        val uri = cameraPhotoUri
+        if (success && uri != null) viewModel.setAttachment(uri, "image/jpeg")
     }
 
     Column(
@@ -81,19 +95,32 @@ fun SnapAndSolveScreen(
             if (state.attachmentUri == null) {
                 SikAiEmptyState(
                     title = "Attach a question",
-                    description = "Pick an image or PDF — SikAi sends it to a multimodal provider so the work gets done end-to-end."
+                    description = "Take a photo or pick an image — SikAi sends it to a multimodal provider so the work gets done end-to-end."
                 )
                 Spacer(Modifier.height(16.dp))
-                SikAiButton(
-                    text = "Pick from gallery",
-                    onClick = {
-                        pickPhoto.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                        )
-                    },
-                    leadingIcon = Icons.Outlined.Image,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SikAiButton(
+                        text = "Camera",
+                        onClick = {
+                            val photoFile = File(context.cacheDir, "snap_${System.currentTimeMillis()}.jpg")
+                            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
+                            cameraPhotoUri = uri
+                            takePhoto.launch(uri)
+                        },
+                        leadingIcon = Icons.Outlined.CameraAlt,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SikAiButton(
+                        text = "Gallery",
+                        onClick = {
+                            pickPhoto.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                            )
+                        },
+                        leadingIcon = Icons.Outlined.Image,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             } else {
                 SikAiCard(modifier = Modifier.fillMaxWidth()) {
                     Column {

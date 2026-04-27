@@ -163,7 +163,7 @@ internal object QwenFileUpload {
     }
 
     private fun deriveSigningKey(secret: String, date: String, region: String, service: String): ByteArray {
-        var key = hmacSha256("aliyun_v4$secret".toByteArray(), date)
+        var key = hmacSha256("aliyun_v4$secret".toByteArray(), date.toByteArray())
         key = hmacSha256(key, region.toByteArray())
         key = hmacSha256(key, service.toByteArray())
         key = hmacSha256(key, "aliyun_v4_request".toByteArray())

@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     name: Build signed APK
@@ -17,8 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Compute short SHA
         id: meta
@@ -34,39 +35,7 @@ jobs:
           java-version: "17"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Read signing properties
-        id: signing
-        run: |
-          set -e
-          # Pull store/key passwords + alias out of the committed file. These are
-          # intentionally non-secret — see README "Keystore note".
-          props=app/signing.properties
-          storePassword=$(grep -E '^storePassword=' "$props" | cut -d= -f2-)
-          keyAlias=$(grep -E '^keyAlias='       "$props" | cut -d= -f2-)
-          keyPassword=$(grep -E '^keyPassword=' "$props" | cut -d= -f2-)
-          echo "storePassword=$storePassword" >> "$GITHUB_OUTPUT"
-          echo "keyAlias=$keyAlias"           >> "$GITHUB_OUTPUT"
-          echo "keyPassword=$keyPassword"     >> "$GITHUB_OUTPUT"
-
-      - name: Generate release keystore (if missing)
-        run: |
-          set -e
-          ks=app/release-keystore.jks
-          if [ -f "$ks" ]; then
-            echo "Keystore already present, reusing committed key."
-          else
-            echo "Keystore missing — generating a deterministic dev keystore so the build can sign."
-            keytool -genkeypair -v \
-              -keystore "$ks" \
-              -storetype JKS \
-              -storepass "${{ steps.signing.outputs.storePassword }}" \
-              -keypass   "${{ steps.signing.outputs.keyPassword }}" \
-              -alias     "${{ steps.signing.outputs.keyAlias }}" \
-              -keyalg    RSA -keysize 2048 -validity 10950 \
-              -dname "CN=SikAi, O=SikAi, L=Kathmandu, S=Bagmati, C=NP"
-          fi
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew

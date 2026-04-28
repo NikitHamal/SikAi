@@ -37,6 +37,9 @@ internal object QwenFileUpload {
         val mime = attachment.mimeType.ifBlank { "application/octet-stream" }
         val (fileType, showType, fileClass) = classify(attachment.displayName, mime)
 
+        android.util.Log.d("QwenUpload", "=== Starting file upload ===")
+        android.util.Log.d("QwenUpload", "filename: ${attachment.displayName}, size: ${bytes.size}, mime: $mime")
+
         val stsBody = buildJsonObject {
             put("filename", attachment.displayName)
             put("filesize", bytes.size)
@@ -52,6 +55,7 @@ internal object QwenFileUpload {
         val stsObj = client.newCall(stsReq).execute().use { resp ->
             session.mergeFromSetCookies(resp.headers("Set-Cookie"))
             val text = resp.body?.string().orEmpty()
+            android.util.Log.d("QwenUpload", "STS response code: ${resp.code}")
             if (!resp.isSuccessful) throw IllegalStateException("STS HTTP ${resp.code}: ${text.take(300)}")
             val parsed = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject }
                 .getOrNull() ?: throw IllegalStateException("STS parse failed: ${text.take(300)}")
@@ -63,9 +67,16 @@ internal object QwenFileUpload {
         val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_url")
         val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_id")
 
+        android.util.Log.d("QwenUpload", "file_url: $fileUrl")
+        android.util.Log.d("QwenUpload", "file_id: $fileId")
+        android.util.Log.d("QwenUpload", "bucketname: ${(stsObj["bucketname"] as? JsonPrimitive)?.content}")
+        android.util.Log.d("QwenUpload", "file_path: ${(stsObj["file_path"] as? JsonPrimitive)?.content}")
+        android.util.Log.d("QwenUpload", "access_key_id: ${(stsObj["access_key_id"] as? JsonPrimitive)?.content?.take(10)}...")
+        android.util.Log.d("QwenUpload", "security_token: ${(stsObj["security_token"] as? JsonPrimitive)?.content?.take(20)}...")
+
         // Flashy uses file_url.split("?")[0] — strip query params, auth via headers only
         val uploadUrl = fileUrl.substringBefore("?")
-        val ossHeaders = buildOssHeaders("PUT", stsObj, mime)
+        val ossHeaders = buildOssHeaders("PUT", stsObj, mime, uploadUrl)
 
         val putReq = Request.Builder()
             .url(uploadUrl)
@@ -75,6 +86,7 @@ internal object QwenFileUpload {
 
         client.newCall(putReq).execute().use { resp ->
             val body = resp.body?.string() ?: ""
+            android.util.Log.e("QwenUpload", "PUT response: ${resp.code}, body: ${body.take(500)}")
             if (!resp.isSuccessful && resp.code != 204) {
                 throw IllegalStateException("OSS upload failed HTTP ${resp.code}: ${body.take(300)}")
             }
@@ -123,6 +135,7 @@ internal object QwenFileUpload {
         method: String,
         stsObj: JsonObject,
         contentType: String,
+        uploadUrl: String,
     ): Map<String, String> {
         val bucketName = (stsObj["bucketname"] as? JsonPrimitive)?.content ?: "qwen-webui-prod"
         val filePath = (stsObj["file_path"] as? JsonPrimitive)?.content ?: ""
@@ -164,8 +177,17 @@ internal object QwenFileUpload {
         val canonicalHeaders = canonicalHeadersList.joinToString("\n") + "\n"
         val signedHeadersStr = signedHeadersList.joinToString(";")
 
-        // Python: quote(file_path, safe='/') keeps slashes unencoded
-        val canonicalUri = "/$bucketName/${quoteOssPath(filePath)}"
+        // Use the path from the upload URL directly to avoid encoding mismatches
+        // The upload URL is like https://bucket.oss-region.aliyuncs.com/path?params
+        // We need just the path portion for the canonical URI
+        val urlPath = try {
+            val url = java.net.URL(uploadUrl)
+            url.path ?: "/$bucketName/${quoteOssPath(filePath)}"
+        } catch (_: Exception) {
+            "/$bucketName/${quoteOssPath(filePath)}"
+        }
+        val canonicalUri = urlPath
+
         val canonicalRequest = "$method\n$canonicalUri\n\n$canonicalHeaders\n$signedHeadersStr\nUNSIGNED-PAYLOAD"
 
         val scope = "$datePart/ap-southeast-1/oss/aliyun_v4_request"

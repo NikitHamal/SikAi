@@ -52,45 +52,39 @@ internal object QwenFileUpload {
         val stsObj = client.newCall(stsReq).execute().use { resp ->
             session.mergeFromSetCookies(resp.headers("Set-Cookie"))
             val text = resp.body?.string().orEmpty()
-            android.util.Log.d("QwenUpload", "STS response code: ${resp.code}, body: ${text.take(500)}")
-            if (!resp.isSuccessful) throw IllegalStateException("STS HTTP ${resp.code}: $text")
+            if (!resp.isSuccessful) throw IllegalStateException("STS HTTP ${resp.code}: ${text.take(300)}")
             val parsed = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject }
-                .getOrNull() ?: throw IllegalStateException("STS parse failed: $text")
+                .getOrNull() ?: throw IllegalStateException("STS parse failed: ${text.take(300)}")
             val ok = (parsed["success"] as? JsonPrimitive)?.content?.toBoolean() ?: false
-            if (!ok) throw IllegalStateException("STS API error: $text")
-            parsed["data"] as? JsonObject ?: throw IllegalStateException("STS missing data: $text")
+            if (!ok) throw IllegalStateException("STS API error: ${text.take(300)}")
+            parsed["data"] as? JsonObject ?: throw IllegalStateException("STS missing data: ${text.take(300)}")
         }
 
         val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_url")
         val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_id")
 
-        android.util.Log.d("QwenUpload", "Uploading to: $fileUrl")
-
-        val uploadUrl = fileUrl.substringBefore("?")
-        val ossHeaders = buildOssHeaders("PUT", stsObj, mime, bytes)
-        
-        android.util.Log.d("QwenUpload", "OSS headers: $ossHeaders")
+        // Flashy passes the full file_url (with query string) to the PUT request
+        val ossHeaders = buildOssHeaders("PUT", stsObj, mime)
 
         val putReq = Request.Builder()
-            .url(uploadUrl)
+            .url(fileUrl)
             .put(rawBody(bytes, mime))
             .apply { ossHeaders.forEach { (k, v) -> header(k, v) } }
             .build()
-            
-        val putCode = runCatching {
-            client.newCall(putReq).execute().use { 
-                val body = it.body?.string() ?: ""
-                android.util.Log.e("QwenUpload", "PUT failed: ${it.code}, body: $body")
-                throw IllegalStateException("OSS upload failed HTTP ${it.code}: $body")
+
+        client.newCall(putReq).execute().use { resp ->
+            val body = resp.body?.string() ?: ""
+            if (!resp.isSuccessful && resp.code != 204) {
+                throw IllegalStateException("OSS upload failed HTTP ${resp.code}: ${body.take(300)}")
             }
-        }.getOrElse { throw IllegalStateException("OSS upload network error: ${it.message}") }
+        }
 
         val now = System.currentTimeMillis()
         return buildJsonObject {
             put("type", fileType)
             putJsonObject("file") {
                 put("created_at", now)
-                putJsonObject("data") { /* empty */ }
+                putJsonObject("data") {  }
                 put("filename", attachment.displayName)
                 put("hash", JsonPrimitive(null as String?))
                 put("id", fileId)
@@ -118,11 +112,16 @@ internal object QwenFileUpload {
         }
     }
 
+    /**
+     * Build OSS V4 signing headers. Matches Flashy's build_oss_headers exactly:
+     * - No content-md5 in the headers dict (only in required_headers for signing, skipped if absent)
+     * - canonical_uri uses quote(file_path, safe='/') which keeps '/' unencoded
+     * - Only includes headers that are actually present in the header set
+     */
     private fun buildOssHeaders(
         method: String,
         stsObj: JsonObject,
         contentType: String,
-        body: ByteArray,
     ): Map<String, String> {
         val bucketName = (stsObj["bucketname"] as? JsonPrimitive)?.content ?: "qwen-webui-prod"
         val filePath = (stsObj["file_path"] as? JsonPrimitive)?.content ?: ""
@@ -136,26 +135,38 @@ internal object QwenFileUpload {
         val dateStr = sdf.format(System.currentTimeMillis())
         val datePart = dateStr.substringBefore("T")
 
-        val contentSha256 = sha256Hex(body)
-        val canonicalUri = "/$bucketName/${encodeOssPath(filePath)}"
-
-        val contentMd5 = md5Hex(body)
+        // Headers we actually send (matching Flashy exactly - no content-md5)
         val headers = linkedMapOf(
-            "content-md5" to contentMd5,
-            "content-type" to contentType,
+            "Content-Type" to contentType,
             "x-oss-content-sha256" to "UNSIGNED-PAYLOAD",
             "x-oss-date" to dateStr,
             "x-oss-security-token" to securityToken,
             "x-oss-user-agent" to "aliyun-sdk-js/6.23.0 Chrome 132.0.0.0 on Windows 10 64-bit",
         )
 
-        val signedHeaderKeys = listOf("content-md5", "content-type", "x-oss-content-sha256", "x-oss-date", "x-oss-security-token", "x-oss-user-agent")
-        val canonicalHeaders = signedHeaderKeys.joinToString("\n") { k ->
-            "$k:${headers[k]}"
-        } + "\n"
-        val signedHeadersStr = signedHeaderKeys.joinToString(";")
+        // Build canonical headers from lowercase versions, only including those present
+        val headersLower = headers.mapKeys { it.key.lowercase() }
+        val requiredHeaders = listOf(
+            "content-md5", "content-type", "x-oss-content-sha256",
+            "x-oss-date", "x-oss-security-token", "x-oss-user-agent",
+        )
 
+        val canonicalHeadersList = mutableListOf<String>()
+        val signedHeadersList = mutableListOf<String>()
+        for (headerName in requiredHeaders.sorted()) {
+            if (headersLower.containsKey(headerName)) {
+                canonicalHeadersList.add("$headerName:${headersLower[headerName]}")
+                signedHeadersList.add(headerName)
+            }
+        }
+
+        val canonicalHeaders = canonicalHeadersList.joinToString("\n") + "\n"
+        val signedHeadersStr = signedHeadersList.joinToString(";")
+
+        // Python: quote(file_path, safe='/') keeps slashes unencoded
+        val canonicalUri = "/$bucketName/${quoteOssPath(filePath)}"
         val canonicalRequest = "$method\n$canonicalUri\n\n$canonicalHeaders\n$signedHeadersStr\nUNSIGNED-PAYLOAD"
+
         val scope = "$datePart/ap-southeast-1/oss/aliyun_v4_request"
         val stringToSign = "OSS4-HMAC-SHA256\n$dateStr\n$scope\n${sha256Hex(canonicalRequest.toByteArray())}"
 
@@ -164,15 +175,31 @@ internal object QwenFileUpload {
 
         val authHeader = "OSS4-HMAC-SHA256 Credential=$accessKeyId/$scope,Signature=$signature"
 
-        return mapOf(
-            "Content-Type" to contentType,
-            "content-md5" to contentMd5,
-            "x-oss-content-sha256" to "UNSIGNED-PAYLOAD",
-            "x-oss-date" to dateStr,
-            "x-oss-security-token" to securityToken,
-            "x-oss-user-agent" to "aliyun-sdk-js/6.23.0 Chrome 132.0.0.0 on Windows 10 64-bit",
-            "Authorization" to authHeader,
-        )
+        // Return headers with original casing for HTTP request
+        val result = mutableMapOf<String, String>()
+        result.putAll(headers)
+        result["Authorization"] = authHeader
+        return result
+    }
+
+    /**
+     * Python's urllib.parse.quote(file_path, safe='/') equivalent:
+     * Encodes everything except '/' and unreserved chars.
+     */
+    private fun quoteOssPath(path: String): String {
+        val sb = StringBuilder()
+        for (ch in path) {
+            when {
+                ch == '/' -> sb.append('/')
+                ch in 'a'..'z' || ch in 'A'..'Z' || ch in '0'..'9' || ch == '-' || ch == '_' || ch == '.' || ch == '~' -> sb.append(ch)
+                else -> {
+                    for (byte in ch.toString().toByteArray(Charsets.UTF_8)) {
+                        sb.append("%${String.format("%02X", byte)}")
+                    }
+                }
+            }
+        }
+        return sb.toString()
     }
 
     private fun deriveSigningKey(secret: String, date: String, region: String, service: String): ByteArray {
@@ -195,17 +222,6 @@ internal object QwenFileUpload {
 
     private fun sha256Hex(data: ByteArray): String {
         return MessageDigest.getInstance("SHA-256").digest(data).joinToString("") { "%02x".format(it) }
-    }
-
-    private fun md5Hex(data: ByteArray): String {
-        return MessageDigest.getInstance("MD5").digest(data).joinToString("") { "%02x".format(it) }
-    }
-
-    private fun encodeOssPath(path: String): String {
-        return path.split("/").joinToString("/") { segment ->
-            URLEncoder.encode(segment, "UTF-8").replace("+", "%20")
-                .replace("%7E", "~").replace("*", "%2A")
-        }
     }
 
     private fun classify(filename: String, mime: String): Triple<String, String, String> {

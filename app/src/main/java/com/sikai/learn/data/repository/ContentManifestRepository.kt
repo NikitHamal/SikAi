@@ -88,6 +88,8 @@ private fun ContentManifestEntry.toEntity() = ContentManifestEntity(
         ContentType.MCQ_PACK -> "mcq_pack"
         ContentType.SYLLABUS -> "syllabus"
         ContentType.NOTES -> "notes"
+        ContentType.MODEL_QUESTION -> "model_question"
+        ContentType.SOLUTION -> "solution"
     },
     classLevel = classLevel,
     subject = subject,

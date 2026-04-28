@@ -10,6 +10,8 @@ enum class ContentType {
     @SerialName("mcq_pack") MCQ_PACK,
     @SerialName("syllabus") SYLLABUS,
     @SerialName("notes") NOTES,
+    @SerialName("model_question") MODEL_QUESTION,
+    @SerialName("solution") SOLUTION,
 }
 
 @Serializable

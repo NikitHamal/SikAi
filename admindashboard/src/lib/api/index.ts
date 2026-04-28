@@ -120,6 +120,13 @@ export function deleteManifest(id: string): Promise<{ ok: boolean }> {
 	return request(`/v1/admin/manifest/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
+export function bulkDeleteManifest(ids: string[]): Promise<{ ok: boolean; deleted: number }> {
+	return request('/v1/admin/manifest/bulk-delete', {
+		method: 'POST',
+		body: JSON.stringify({ ids }),
+	});
+}
+
 // ── Questions ──
 
 export interface Question {
@@ -177,6 +184,13 @@ export function deleteQuestion(id: string): Promise<{ ok: boolean }> {
 	return request(`/v1/admin/questions/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
+export function bulkDeleteQuestions(ids: string[]): Promise<{ ok: boolean; deleted: number }> {
+	return request('/v1/admin/questions/bulk-delete', {
+		method: 'POST',
+		body: JSON.stringify({ ids }),
+	});
+}
+
 // ── Subjects ──
 
 export interface Subject {
@@ -200,6 +214,13 @@ export function upsertSubjects(items: Subject[]): Promise<{ ok: boolean; upserte
 
 export function deleteSubject(id: string): Promise<{ ok: boolean }> {
 	return request(`/v1/admin/subjects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export function bulkDeleteSubjects(ids: string[]): Promise<{ ok: boolean; deleted: number }> {
+	return request('/v1/admin/subjects/bulk-delete', {
+		method: 'POST',
+		body: JSON.stringify({ ids }),
+	});
 }
 
 // ── Analytics ──

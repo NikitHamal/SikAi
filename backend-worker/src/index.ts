@@ -26,6 +26,11 @@
  *   PUT  /v1/admin/questions/:id                      -> update
  *   DELETE /v1/admin/questions/:id                     -> delete
  *   POST /v1/admin/questions/bulk                     -> bulk import
+ *   POST /v1/admin/questions/bulk-delete              -> bulk delete
+ *   ── Manifest bulk ──
+ *   POST /v1/admin/manifest/bulk-delete                -> bulk delete
+ *   ── Subjects bulk ──
+ *   POST /v1/admin/subjects/bulk-delete                -> bulk delete
  *   ── Subjects CRUD ──
  *   GET  /v1/admin/subjects                           -> list
  *   POST /v1/admin/subjects                           -> upsert
@@ -126,6 +131,7 @@ export default {
         if (path === "/v1/admin/stats" && method === "GET") return await handleAdminStats(env);
         if (path === "/v1/admin/manifest" && method === "GET") return await handleAdminManifestList(request, env);
         if (path === "/v1/admin/manifest" && method === "POST") return await handleAdminUpsert(request, env);
+        if (path === "/v1/admin/manifest/bulk-delete" && method === "POST") return await handleAdminManifestBulkDelete(request, env);
         if (path.match(/^\/v1\/admin\/manifest\/[^/]+$/) && method === "PUT") {
           const id = decodeURIComponent(path.split("/").pop()!);
           return await handleAdminManifestUpdate(id, request, env);
@@ -137,6 +143,7 @@ export default {
         if (path === "/v1/admin/questions" && method === "GET") return await handleAdminQuestions(request, env);
         if (path === "/v1/admin/questions" && method === "POST") return await handleAdminQuestionCreate(request, env);
         if (path === "/v1/admin/questions/bulk" && method === "POST") return await handleAdminQuestionBulk(request, env);
+        if (path === "/v1/admin/questions/bulk-delete" && method === "POST") return await handleAdminQuestionBulkDelete(request, env);
         if (path.match(/^\/v1\/admin\/questions\/[^/]+$/) && method === "PUT") {
           const id = decodeURIComponent(path.split("/").pop()!);
           return await handleAdminQuestionUpdate(id, request, env);
@@ -147,6 +154,7 @@ export default {
         }
         if (path === "/v1/admin/subjects" && method === "GET") return await handleAdminSubjects(env);
         if (path === "/v1/admin/subjects" && method === "POST") return await handleAdminSubjectUpsert(request, env);
+        if (path === "/v1/admin/subjects/bulk-delete" && method === "POST") return await handleAdminSubjectBulkDelete(request, env);
         if (path.match(/^\/v1\/admin\/subjects\/[^/]+$/) && method === "DELETE") {
           const id = decodeURIComponent(path.split("/").pop()!);
           return await handleAdminSubjectDelete(id, env);
@@ -388,6 +396,14 @@ async function handleAdminManifestDelete(id: string, env: Env): Promise<Response
   return json({ ok: true }, env);
 }
 
+async function handleAdminManifestBulkDelete(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as { ids: string[] };
+  if (!body.ids?.length) return json({ error: "ids array required" }, env, 400);
+  const stmts = body.ids.map(id => env.DB.prepare("DELETE FROM content_manifest WHERE id = ?").bind(id));
+  await env.DB.batch(stmts);
+  return json({ ok: true, deleted: body.ids.length }, env);
+}
+
 // ─── Admin: Questions CRUD ──────────────────────────────────────────
 
 async function handleAdminQuestions(request: Request, env: Env): Promise<Response> {
@@ -461,6 +477,14 @@ async function handleAdminQuestionDelete(id: string, env: Env): Promise<Response
   return json({ ok: true }, env);
 }
 
+async function handleAdminQuestionBulkDelete(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as { ids: string[] };
+  if (!body.ids?.length) return json({ error: "ids array required" }, env, 400);
+  const stmts = body.ids.map(id => env.DB.prepare("DELETE FROM question WHERE id = ?").bind(id));
+  await env.DB.batch(stmts);
+  return json({ ok: true, deleted: body.ids.length }, env);
+}
+
 // ─── Admin: Subjects ────────────────────────────────────────────────
 
 async function handleAdminSubjects(env: Env): Promise<Response> {
@@ -483,6 +507,14 @@ async function handleAdminSubjectUpsert(request: Request, env: Env): Promise<Res
 async function handleAdminSubjectDelete(id: string, env: Env): Promise<Response> {
   await env.DB.prepare("DELETE FROM subject WHERE id = ?").bind(id).run();
   return json({ ok: true }, env);
+}
+
+async function handleAdminSubjectBulkDelete(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as { ids: string[] };
+  if (!body.ids?.length) return json({ error: "ids array required" }, env, 400);
+  const stmts = body.ids.map(id => env.DB.prepare("DELETE FROM subject WHERE id = ?").bind(id));
+  await env.DB.batch(stmts);
+  return json({ ok: true, deleted: body.ids.length }, env);
 }
 
 // ─── Admin: Analytics ───────────────────────────────────────────────

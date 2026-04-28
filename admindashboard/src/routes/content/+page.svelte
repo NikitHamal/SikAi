@@ -1,12 +1,16 @@
 <script lang="ts">
-	import { getManifest, upsertManifest, deleteManifest, type ManifestItem } from '$lib/api';
+	import { getManifest, upsertManifest, deleteManifest, bulkDeleteManifest, type ManifestItem } from '$lib/api';
 
 	let items = $state<ManifestItem[]>([]);
 	let total = $state(0);
 	let loading = $state(true);
 	let error = $state('');
+	let successMsg = $state('');
 	let showForm = $state(false);
+	let showImport = $state(false);
 	let editingItem = $state<ManifestItem | null>(null);
+	let searchQuery = $state('');
+	let selectedIds = $state<Set<string>>(new Set());
 
 	let formId = $state('');
 	let formTitle = $state('');
@@ -18,15 +22,35 @@
 	let formLanguage = $state('en');
 	let formTags = $state('');
 
+	let importJson = $state('');
+	let importError = $state('');
+
+	let showConfirmDelete = $state(false);
+	let confirmDeleteCount = $state(0);
+
 	const TYPES = ['past_paper', 'syllabus', 'textbook', 'notes', 'mcq_pack', 'model_question', 'solution'];
 	const SUBJECTS = ['Mathematics', 'Science', 'English', 'Nepali', 'Social Studies', 'Physics', 'Chemistry', 'Biology', 'Computer', 'All'];
 	const CLASS_LEVELS = [8, 10, 12];
+
+	let filteredItems = $derived(() => {
+		let result = items;
+		if (searchQuery) {
+			const q = searchQuery.toLowerCase();
+			result = result.filter(i => i.title.toLowerCase().includes(q) || i.id.toLowerCase().includes(q) || i.subject.toLowerCase().includes(q) || i.type.toLowerCase().includes(q));
+		}
+		return result;
+	});
+
+	let allCurrentSelected = $derived(() => {
+		const fi = filteredItems();
+		return fi.length > 0 && fi.every(i => selectedIds.has(i.id));
+	});
 
 	async function load() {
 		loading = true;
 		error = '';
 		try {
-			const res = await getManifest(200, 0);
+			const res = await getManifest(500, 0);
 			items = res.items;
 			total = res.total;
 		} catch (e: any) {
@@ -34,6 +58,30 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	function toggleSelectAll() {
+		const fi = filteredItems();
+		if (allCurrentSelected()) {
+			const newSet = new Set(selectedIds);
+			for (const i of fi) newSet.delete(i.id);
+			selectedIds = newSet;
+		} else {
+			const newSet = new Set(selectedIds);
+			for (const i of fi) newSet.add(i.id);
+			selectedIds = newSet;
+		}
+	}
+
+	function toggleSelect(id: string) {
+		const newSet = new Set(selectedIds);
+		if (newSet.has(id)) newSet.delete(id);
+		else newSet.add(id);
+		selectedIds = newSet;
+	}
+
+	function clearSelection() {
+		selectedIds = new Set();
 	}
 
 	function openCreate() {
@@ -84,6 +132,8 @@
 			};
 			await upsertManifest([item]);
 			showForm = false;
+			successMsg = editingItem ? 'Content updated' : 'Content created';
+			setTimeout(() => successMsg = '', 3000);
 			await load();
 		} catch (e: any) {
 			error = e.message;
@@ -94,10 +144,85 @@
 		if (!confirm(`Delete "${id}"?`)) return;
 		try {
 			await deleteManifest(id);
+			successMsg = 'Content deleted';
+			setTimeout(() => successMsg = '', 3000);
 			await load();
 		} catch (e: any) {
 			error = e.message;
 		}
+	}
+
+	function askBulkDelete() {
+		confirmDeleteCount = selectedIds.size;
+		showConfirmDelete = true;
+	}
+
+	async function confirmBulkDelete() {
+		showConfirmDelete = false;
+		try {
+			await bulkDeleteManifest([...selectedIds]);
+			successMsg = `Deleted ${selectedIds.size} items`;
+			selectedIds = new Set();
+			setTimeout(() => successMsg = '', 3000);
+			await load();
+		} catch (e: any) {
+			error = e.message;
+		}
+	}
+
+	function exportJson() {
+		const data = filteredItems().length && searchQuery ? filteredItems() : items;
+		const json = JSON.stringify(data, null, 2);
+		const blob = new Blob([json], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `sikai-manifest-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	function exportSelectedJson() {
+		const data = items.filter(i => selectedIds.has(i.id));
+		const json = JSON.stringify(data, null, 2);
+		const blob = new Blob([json], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `sikai-manifest-selected-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	function openImport() {
+		importJson = '';
+		importError = '';
+		showImport = true;
+	}
+
+	async function handleImport() {
+		importError = '';
+		try {
+			const parsed = JSON.parse(importJson);
+			const itemsToImport: ManifestItem[] = Array.isArray(parsed) ? parsed : parsed.items ?? [parsed];
+			if (!itemsToImport.length) { importError = 'No items found in JSON'; return; }
+			const res = await upsertManifest(itemsToImport);
+			showImport = false;
+			successMsg = `Imported ${res.upserted} items`;
+			setTimeout(() => successMsg = '', 3000);
+			await load();
+		} catch (e: any) {
+			importError = e.message || 'Invalid JSON format';
+		}
+	}
+
+	function handleFileImport(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => { importJson = reader.result as string; };
+		reader.readAsText(file);
 	}
 
 	load();
@@ -108,8 +233,9 @@
 	<p>Manage downloadable content — past papers, syllabi, textbooks. Host files on GitHub Releases or any CDN and paste the URL here.</p>
 </div>
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-	<span style="color:var(--text-secondary); font-size:13px;">{total} items</span>
+<div style="display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">
+	<input class="form-input" style="width:240px;padding:6px 12px;font-size:13px" placeholder="Search content..." bind:value={searchQuery} />
+	<span style="color:var(--text-secondary); font-size:13px; margin-left:auto;">{total} items</span>
 	<button class="btn btn-primary" onclick={openCreate}>+ Add Content</button>
 </div>
 
@@ -117,10 +243,41 @@
 	<div class="error-msg">{error}</div>
 {/if}
 
+{#if successMsg}
+	<div class="toast-container"><div class="toast toast-success">{successMsg}</div></div>
+{/if}
+
+{#if selectedIds.size > 0}
+	<div class="bulk-action-bar animate-in">
+		<span>{selectedIds.size} selected</span>
+		<button class="btn btn-secondary btn-sm" onclick={clearSelection}>Clear</button>
+		<button class="btn btn-secondary btn-sm" onclick={exportSelectedJson}>Export Selected</button>
+		<button class="btn btn-danger btn-sm" onclick={askBulkDelete}>Delete Selected</button>
+	</div>
+{/if}
+
+<div style="display:flex; gap:8px; margin-bottom:16px;">
+	<button class="btn btn-secondary btn-sm" onclick={exportJson}>Export JSON</button>
+	<button class="btn btn-secondary btn-sm" onclick={openImport}>Import JSON</button>
+</div>
+
+{#if showConfirmDelete}
+	<div class="modal-overlay" onclick={() => showConfirmDelete = false}>
+		<div class="modal" onclick={(e) => e.stopPropagation()}>
+			<h3>Confirm Bulk Delete</h3>
+			<p style="color:var(--text-secondary); font-size:14px; margin-bottom:8px;">
+				Are you sure you want to delete <strong style="color:var(--red)">{confirmDeleteCount}</strong> content items? This cannot be undone.
+			</p>
+			<div class="modal-actions">
+				<button class="btn btn-secondary" onclick={() => showConfirmDelete = false}>Cancel</button>
+				<button class="btn btn-danger" onclick={confirmBulkDelete}>Delete {confirmDeleteCount} Items</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
 {#if showForm}
-	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div class="modal-overlay" onclick={() => showForm = false}>
-		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<h3>{editingItem ? 'Edit Content' : 'Add Content'}</h3>
 			{#if error}<div class="error-msg">{error}</div>{/if}
@@ -179,6 +336,30 @@
 	</div>
 {/if}
 
+{#if showImport}
+	<div class="modal-overlay" onclick={() => showImport = false}>
+		<div class="modal" onclick={(e) => e.stopPropagation()}>
+			<h3>Import Content (JSON)</h3>
+			<p style="color:var(--text-secondary); font-size:13px; margin-bottom:12px;">
+				Paste JSON or upload a file. Format: array of manifest items or &#123;"items": [...]&#125;.
+			</p>
+			{#if importError}<div class="error-msg">{importError}</div>{/if}
+			<div class="form-group" style="margin-bottom:12px;">
+				<label>Upload JSON File</label>
+				<input type="file" accept=".json" class="form-input" onchange={handleFileImport} />
+			</div>
+			<div class="form-group">
+				<label>Or paste JSON below</label>
+				<textarea class="form-input" bind:value={importJson} rows="8" style="font-family:monospace;font-size:12px;" placeholder="Paste JSON array of manifest items here..."></textarea>
+			</div>
+			<div class="modal-actions">
+				<button class="btn btn-secondary" onclick={() => showImport = false}>Cancel</button>
+				<button class="btn btn-primary" onclick={handleImport} disabled={!importJson.trim()}>Import</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
 {#if loading}
 	<p style="color:var(--text-tertiary)">Loading...</p>
 {:else if items.length === 0}
@@ -192,6 +373,9 @@
 		<table>
 			<thead>
 				<tr>
+					<th style="width:40px;">
+						<input type="checkbox" checked={allCurrentSelected()} onchange={toggleSelectAll} />
+					</th>
 					<th>ID</th>
 					<th>Title</th>
 					<th>Type</th>
@@ -203,8 +387,11 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each items as item}
-					<tr>
+				{#each filteredItems() as item}
+					<tr class:row-selected={selectedIds.has(item.id)}>
+						<td>
+							<input type="checkbox" checked={selectedIds.has(item.id)} onchange={() => toggleSelect(item.id)} />
+						</td>
 						<td style="font-family:monospace; font-size:12px; color:var(--accent)">{item.id}</td>
 						<td style="color:var(--text)">{item.title}</td>
 						<td><span class="badge badge-accent">{item.type.replace(/_/g, ' ')}</span></td>

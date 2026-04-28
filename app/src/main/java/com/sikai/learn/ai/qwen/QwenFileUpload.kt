@@ -188,7 +188,9 @@ internal object QwenFileUpload {
         }
         val canonicalUri = urlPath
 
-        val canonicalRequest = "$method\n$canonicalUri\n\n$canonicalHeaders\n$signedHeadersStr\nUNSIGNED-PAYLOAD"
+        // Flashy format: METHOD\nURI\n\nHEADERS\n\nUNSIGNED-PAYLOAD
+        // Note: the signed-headers portion is an empty line, NOT the actual signed headers list
+        val canonicalRequest = "$method\n$canonicalUri\n\n$canonicalHeaders\n\nUNSIGNED-PAYLOAD"
 
         val scope = "$datePart/ap-southeast-1/oss/aliyun_v4_request"
         val stringToSign = "OSS4-HMAC-SHA256\n$dateStr\n$scope\n${sha256Hex(canonicalRequest.toByteArray())}"

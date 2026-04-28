@@ -63,11 +63,12 @@ internal object QwenFileUpload {
         val fileUrl = (stsObj["file_url"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_url")
         val fileId = (stsObj["file_id"] as? JsonPrimitive)?.content ?: throw IllegalStateException("STS missing file_id")
 
-        // Flashy passes the full file_url (with query string) to the PUT request
+        // Flashy uses file_url.split("?")[0] — strip query params, auth via headers only
+        val uploadUrl = fileUrl.substringBefore("?")
         val ossHeaders = buildOssHeaders("PUT", stsObj, mime)
 
         val putReq = Request.Builder()
-            .url(fileUrl)
+            .url(uploadUrl)
             .put(rawBody(bytes, mime))
             .apply { ossHeaders.forEach { (k, v) -> header(k, v) } }
             .build()

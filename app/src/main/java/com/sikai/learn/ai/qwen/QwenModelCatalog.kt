@@ -58,7 +58,7 @@ class QwenModelCatalog @Inject constructor(
             client.newCall(req).execute().use { resp ->
                 if (!resp.isSuccessful) return@use emptyList()
                 val text = resp.body?.string().orEmpty()
-                val json = Json.parseToJsonElement(text) as? JsonObject
+                val json = Json.parseToJsonElement(text) as? JsonObject ?: return@use emptyList()
                 mapResponse(json)
             }
         }.getOrDefault(emptyList())

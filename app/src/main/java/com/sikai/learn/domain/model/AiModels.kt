@@ -33,7 +33,6 @@ enum class AiCapability { TEXT, VISION, FILE_UPLOAD, PDF, STREAMING, SEARCH, THI
 enum class AiRequestFormat { OPENAI_COMPATIBLE, GEMINI_COMPATIBLE, CUSTOM_SIMPLE }
 
 @Serializable
-@Serializable
 data class AiModel(
     val id: String,
     val displayName: String,

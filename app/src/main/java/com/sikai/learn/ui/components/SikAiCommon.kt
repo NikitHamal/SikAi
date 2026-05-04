@@ -1,16 +1,7 @@
 package com.sikai.learn.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material3.HorizontalDivider
@@ -43,14 +34,35 @@ fun SikAiSectionTitle(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         trailing?.invoke()
-}
     }
 }
 
 @Composable
-fun SikAiHairline(modifier: Modifier = Modifier) {
-    HorizontalDivider(modifier = modifier)
-}
+fun SikAiStatusPill(
+    text: String,
+    modifier: Modifier = Modifier,
+    accent: Color? = null,
+    leadingIcon: ImageVector? = null,
+) {
+    val containerColor = accent?.copy(alpha = 0.15f) ?: MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = accent ?: MaterialTheme.colorScheme.onSurfaceVariant
+    
+    Row(
+        modifier = modifier
+            .clip(SikAi.tokens.cornerPill)
+            .background(containerColor)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (leadingIcon != null) {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(Modifier.width(6.dp))
+        }
         Text(
             text = text,
             style = SikAi.type.label,
@@ -112,7 +124,7 @@ fun SikAiEmptyState(
 @Composable
 fun SikAiPageHeader(
     title: String,
-    subtitle: String? = null, // Deprecated/Removed from UI but kept for API stability
+    subtitle: String? = null,
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
@@ -137,4 +149,9 @@ fun SikAiPageHeader(
             trailing?.invoke()
         }
     }
+}
+
+@Composable
+fun SikAiHairline(modifier: Modifier = Modifier) {
+    HorizontalDivider(modifier = modifier)
 }

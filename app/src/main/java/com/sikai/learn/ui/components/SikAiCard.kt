@@ -1,11 +1,10 @@
 package com.sikai.learn.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,14 +23,16 @@ fun SikAiCard(
     content: @Composable () -> Unit,
 ) {
     val tokens = SikAi.tokens
-    val colors = SikAi.colors
-    val shape = tokens.cornerCard
-    val bg = surfaceColor ?: if (emphasized) colors.surfaceMuted else colors.surface
+    val shape = tokens.cornerMedium
+    val bg = surfaceColor ?: if (emphasized) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
     val baseModifier = modifier
         .clip(shape)
         .background(bg)
-        .border(BorderStroke(1.dp, colors.borderSubtle), shape)
         .let { if (onClick != null) it.clickable(onClick = onClick) else it }
 
     Box(modifier = baseModifier.padding(contentPadding)) {

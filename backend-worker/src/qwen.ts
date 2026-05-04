@@ -441,6 +441,12 @@ export async function handleQwenChat(request: Request, env: Env): Promise<Respon
   };
 
   // 3) Stream SSE response to client
+  const streamResp = await fetch(`https://chat.qwen.ai/api/v2/chat/completions?chat_id=${chatId}`, {
+    method: "POST",
+    headers: { ...headers, Accept: "text/event-stream" },
+    body: JSON.stringify(streamPayload),
+  });
+
   return new Response(streamResp.body, {
     status: streamResp.status,
     headers: {

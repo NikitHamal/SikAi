@@ -4,21 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.sikai.learn.ui.theme.SikAi
@@ -36,48 +33,42 @@ fun SikAiBottomNav(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = SikAi.colors
-    Column(modifier = modifier.fillMaxWidth()) {
-
+    // The main container for the floating navbar
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 12.dp, end = 12.dp, bottom = 12.dp, top = 8.dp) // External margins as requested
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.background)
-                .padding(horizontal = 6.dp, vertical = 6.dp),
+                .clip(RoundedCornerShape(40.dp)) // Highly rounded borders as per image
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)) // Subtle floating background
+                .padding(vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
                 val selected = item.key == selectedKey
-                Column(
+                
+                Box(
                     modifier = Modifier
+                        .size(48.dp) // Large tap target / circle background
+                        .clip(CircleShape)
                         .clickable { onSelect(item.key) }
-                        .padding(vertical = 6.dp, horizontal = 4.dp)
-                        .size(width = 64.dp, height = 56.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primary 
+                            else androidx.compose.ui.graphics.Color.Transparent
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        tint = if (selected) colors.accent else colors.onSurfaceMuted,
-                        modifier = Modifier.size(22.dp)
+                        tint = if (selected) MaterialTheme.colorScheme.onPrimary 
+                               else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(26.dp) // Sized perfectly to the circle
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = item.label,
-                        style = SikAi.type.caption,
-                        color = if (selected) colors.onSurface else colors.onSurfaceMuted
-                    )
-                    if (selected) {
-                        Spacer(Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .width(18.dp)
-                                .height(2.dp)
-                                .background(colors.accent)
-                        )
-                    }
                 }
             }
         }

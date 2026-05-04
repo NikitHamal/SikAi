@@ -1,12 +1,9 @@
 package com.sikai.learn.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,11 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inbox
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,26 +31,16 @@ fun SikAiSectionTitle(
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val colors = SikAi.colors
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .clip(CircleShape)
-                    .background(colors.accent)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = text.uppercase(),
-                style = SikAi.type.sectionTitle,
-                color = colors.onSurfaceMuted
-            )
-        }
+        Text(
+            text = text.uppercase(),
+            style = SikAi.type.sectionTitle,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         trailing?.invoke()
     }
 }
@@ -66,36 +52,29 @@ fun SikAiStatusPill(
     accent: Color? = null,
     leadingIcon: ImageVector? = null,
 ) {
-    val colors = SikAi.colors
-    val pillColor = accent ?: colors.accent
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    
     Row(
         modifier = modifier
             .clip(SikAi.tokens.cornerPill)
-            .background(colors.surfaceMuted)
-
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .background(containerColor)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(pillColor)
-        )
-        Spacer(Modifier.width(6.dp))
         if (leadingIcon != null) {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = colors.onSurfaceMuted,
-                modifier = Modifier.size(12.dp)
+                tint = contentColor,
+                modifier = Modifier.size(14.dp)
             )
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(6.dp))
         }
         Text(
             text = text,
             style = SikAi.type.label,
-            color = colors.onSurface
+            color = contentColor
         )
     }
 }
@@ -108,40 +87,43 @@ fun SikAiEmptyState(
     action: (@Composable () -> Unit)? = null,
     icon: ImageVector = Icons.Outlined.Inbox,
 ) {
-    val colors = SikAi.colors
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 40.dp, horizontal = 24.dp),
+            .padding(vertical = 48.dp, horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .size(56.dp)
-                .clip(SikAi.tokens.cornerSharp)
-                .background(colors.surfaceMuted)
-                ,
+                .size(64.dp)
+                .clip(SikAi.tokens.cornerMedium)
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = colors.accent,
-                modifier = Modifier.size(24.dp)
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(32.dp)
             )
         }
-        Spacer(Modifier.height(16.dp))
-        Text(text = title, style = SikAi.type.titleLarge, color = colors.onSurface)
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = title, 
+            style = SikAi.type.titleLarge, 
+            color = MaterialTheme.colorScheme.onSurface
+        )
         if (description != null) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 text = description,
                 style = SikAi.type.bodyMedium,
-                color = colors.onSurfaceMuted
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
         if (action != null) {
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
             action()
         }
     }
@@ -150,17 +132,16 @@ fun SikAiEmptyState(
 @Composable
 fun SikAiPageHeader(
     title: String,
-    subtitle: String? = null,
+    subtitle: String? = null, // Deprecated/Removed from UI but kept for API stability
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val colors = SikAi.colors
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(
                 horizontal = SikAi.tokens.pageHorizontal,
-                vertical = SikAi.tokens.space20
+                vertical = SikAi.tokens.space24
             )
     ) {
         Row(
@@ -168,28 +149,12 @@ fun SikAiPageHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle.uppercase(),
-                        style = SikAi.type.sectionTitle,
-                        color = colors.accent
-                    )
-                    Spacer(Modifier.height(4.dp))
-                }
-                Text(
-                    text = title,
-                    style = SikAi.type.displayMedium,
-                    color = colors.onSurface
-                )
-            }
+            Text(
+                text = title,
+                style = SikAi.type.displayMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             trailing?.invoke()
         }
     }
-
-}
-
-@Composable
-fun SikAiHairline(modifier: Modifier = Modifier) {
-
 }

@@ -44,16 +44,7 @@ fun PastPapersScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
-            title = "Past Papers",
-            subtitle = state.classLevel?.let { "CLASS $it · OFFICIAL ARCHIVE" } ?: "PICK A CLASS FIRST",
-            trailing = {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = SikAi.colors.onSurface,
-                    modifier = Modifier.size(28.dp).clickable(onClick = onBack)
-                )
-            }
+            title = "Past Papers"
         )
         Row(modifier = Modifier.fillMaxWidth().padding(tokens.pageHorizontal)) {
             SikAiButton(

@@ -1,19 +1,14 @@
 package com.sikai.learn.presentation.screens.progress
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
@@ -40,16 +35,7 @@ fun ProgressScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
-            title = "Progress",
-            subtitle = "STREAK · ATTEMPTS · WEAK SPOTS",
-            trailing = {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = SikAi.colors.onSurface,
-                    modifier = Modifier.size(28.dp).clickable(onClick = onBack)
-                )
-            }
+            title = "Progress"
         )
         LazyColumn(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -58,14 +44,14 @@ fun ProgressScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                SikAiCard() {
+                SikAiCard {
                     Column {
                         SikAiStatusPill(text = "STREAK")
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = "${state.streakDays} day${if (state.streakDays == 1) "" else "s"} active",
                             style = SikAi.type.displayMedium,
-                            color = SikAi.colors.onSurface,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -83,18 +69,22 @@ fun ProgressScreen(
                     SikAiCard {
                         Row {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(attempt.subject, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+                                Text(
+                                    text = attempt.subject, 
+                                    style = SikAi.type.titleMedium, 
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = formatTimestamp(attempt.finishedAtMillis),
                                     style = SikAi.type.caption,
-                                    color = SikAi.colors.onSurfaceMuted,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                             Text(
                                 text = "${attempt.correct}/${attempt.total}",
                                 style = SikAi.type.titleLarge,
-                                color = SikAi.colors.accent,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
@@ -104,18 +94,36 @@ fun ProgressScreen(
             item { SikAiSectionTitle("Weak topics") }
             if (state.weakTopics.isEmpty()) {
                 item {
-                    SikAiEmptyState(title = "Nothing flagged yet", description = "Take a few quizzes and SikAi will surface weak topics here.")
+                    SikAiEmptyState(
+                        title = "Nothing flagged yet", 
+                        description = "Take a few quizzes and SikAi will surface weak topics here."
+                    )
                 }
             } else {
                 items(state.weakTopics, key = { it.id }) { row ->
                     SikAiCard {
                         Row {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(row.topic, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    text = row.topic, 
+                                    style = SikAi.type.titleMedium, 
+                                    color = MaterialTheme.colorScheme.onSurface, 
+                                    maxLines = 1, 
+                                    overflow = TextOverflow.Ellipsis
+                                )
                                 Spacer(Modifier.height(2.dp))
-                                Text(row.subject, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    text = row.subject, 
+                                    style = SikAi.type.bodySmall, 
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                                    maxLines = 1, 
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
-                            SikAiStatusPill(text = "${(row.strengthScore * 100).toInt()}%", accent = SikAi.colors.danger)
+                            SikAiStatusPill(
+                                text = "${(row.strengthScore * 100).toInt()}%", 
+                                accent = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }

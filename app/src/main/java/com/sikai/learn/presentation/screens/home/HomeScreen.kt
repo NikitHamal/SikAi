@@ -11,16 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Article
-import androidx.compose.material.icons.outlined.AutoStories
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Chat
-import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.Quiz
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
@@ -50,14 +43,12 @@ fun HomeScreen(
     onOpenDownloads: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SikAi.colors
     val tokens = SikAi.tokens
     val classLabel = state.profile?.classLevel?.let { "Class $it" } ?: "Welcome"
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
             title = classLabel,
-            subtitle = "SIKAI · LEARN WITH AI",
             trailing = {
                 if (state.daysToExam != null) {
                     SikAiStatusPill(text = "${state.daysToExam} days to exam")
@@ -71,19 +62,19 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                SikAiCard( contentPadding = 18.dp) {
+                SikAiCard(contentPadding = 18.dp) {
                     Column {
                         Text(
                             text = "Today's focus",
                             style = SikAi.type.sectionTitle,
-                            color = colors.accent
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
                             text = state.profile?.let { "Keep going on ${it.studyMinutesPerDay} mins / day" }
                                 ?: "Sign in to start a streak",
                             style = SikAi.type.titleLarge,
-                            color = colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(Modifier.height(10.dp))
                         Text(
@@ -91,7 +82,7 @@ fun HomeScreen(
                                 state.subjectNames.joinToString(" · ")
                             else "No subjects selected yet.",
                             style = SikAi.type.bodyMedium,
-                            color = colors.onSurfaceMuted
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -167,31 +158,65 @@ private fun QuickAction(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val colors = SikAi.colors
     SikAiCard(onClick = onClick, modifier = modifier) {
         Column {
-            Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
+            Icon(
+                imageVector = icon, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.primary
+            )
             Spacer(Modifier.height(12.dp))
-            Text(text = title, style = SikAi.type.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = title, 
+                style = SikAi.type.titleMedium, 
+                color = MaterialTheme.colorScheme.onSurface, 
+                maxLines = 1, 
+                overflow = TextOverflow.Ellipsis
+            )
             Spacer(Modifier.height(2.dp))
-            Text(text = subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = subtitle, 
+                style = SikAi.type.bodySmall, 
+                color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                maxLines = 1, 
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 @Composable
 private fun NavRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
-    val colors = SikAi.colors
     SikAiCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon, contentDescription = null, tint = colors.accent)
+            Icon(
+                imageVector = icon, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.primary
+            )
             Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = SikAi.type.titleMedium, color = colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = title, 
+                    style = SikAi.type.titleMedium, 
+                    color = MaterialTheme.colorScheme.onSurface, 
+                    maxLines = 1, 
+                    overflow = TextOverflow.Ellipsis
+                )
                 Spacer(Modifier.height(2.dp))
-                Text(subtitle, style = SikAi.type.bodySmall, color = colors.onSurfaceMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = subtitle, 
+                    style = SikAi.type.bodySmall, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                    maxLines = 1, 
+                    overflow = TextOverflow.Ellipsis
+                )
             }
-            Icon(imageVector = Icons.Outlined.Article, contentDescription = null, tint = colors.borderStrong)
+            Icon(
+                imageVector = Icons.Outlined.ChevronRight, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.outlineVariant
+            )
         }
     }
 }

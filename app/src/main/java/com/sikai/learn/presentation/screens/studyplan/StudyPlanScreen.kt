@@ -1,6 +1,5 @@
 package com.sikai.learn.presentation.screens.studyplan
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,11 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
@@ -44,16 +43,7 @@ fun StudyPlanScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
-            title = "Study Plan",
-            subtitle = "DAY-BY-DAY",
-            trailing = {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = SikAi.colors.onSurface,
-                    modifier = Modifier.size(28.dp).clickable(onClick = onBack)
-                )
-            }
+            title = "Study Plan"
         )
 
         if (state.plan == null) {
@@ -84,12 +74,16 @@ fun StudyPlanScreen(
                     Column {
                         SikAiStatusPill(text = "ACTIVE PLAN")
                         Spacer(Modifier.height(8.dp))
-                        Text(state.plan?.title.orEmpty(), style = SikAi.type.titleLarge, color = SikAi.colors.onSurface)
+                        Text(
+                            text = state.plan?.title.orEmpty(), 
+                            style = SikAi.type.titleLarge, 
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "${state.tasks.size} tasks · ${state.studyMinutesPerDay} min / day",
                             style = SikAi.type.bodySmall,
-                            color = SikAi.colors.onSurfaceMuted
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -100,23 +94,29 @@ fun StudyPlanScreen(
                         Icon(
                             imageVector = if (task.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
                             contentDescription = null,
-                            tint = if (task.isCompleted) SikAi.colors.accent else SikAi.colors.borderStrong,
+                            tint = if (task.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                         )
                         Spacer(Modifier.size(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Day ${task.dayIndex + 1} · ${task.subject}",
                                 style = SikAi.type.label,
-                                color = SikAi.colors.onSurfaceMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(task.title, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                text = task.title, 
+                                style = SikAi.type.titleMedium, 
+                                color = MaterialTheme.colorScheme.onSurface, 
+                                maxLines = 1, 
+                                overflow = TextOverflow.Ellipsis
+                            )
                             if (task.description != null) {
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = task.description,
                                     style = SikAi.type.bodySmall,
-                                    color = SikAi.colors.onSurfaceMuted,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }

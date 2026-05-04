@@ -67,21 +67,21 @@ fun defaultSikAiType() = SikAiType(
         letterSpacing = 0.5.sp,
     ),
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.5.sp,
     ),
     bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 13.sp,
         lineHeight = 18.sp,
         letterSpacing = 0.25.sp,
     ),
     bodySmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -102,7 +102,7 @@ fun defaultSikAiType() = SikAiType(
         letterSpacing = 0.1.sp,
     ),
     caption = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 11.sp,
         lineHeight = 16.sp,

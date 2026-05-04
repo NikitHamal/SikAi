@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -49,15 +50,13 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val tokens = SikAi.tokens
-    val colors = SikAi.colors
 
     // Per-provider draft API key, keyed by provider id.
     val drafts = remember { mutableStateMapOf<String, String>() }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
-            title = "Settings",
-            subtitle = "PROVIDERS · APPEARANCE · DATA",
+            title = "Settings"
         )
         LazyColumn(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -72,11 +71,11 @@ fun SettingsScreen(
                         Text(
                             text = "Theme",
                             style = SikAi.type.titleMedium,
-                            color = colors.onSurface,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Spacer(Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ThemeMode.values().forEach { mode ->
+                            ThemeMode.entries.forEach { mode ->
                                 val selected = state.themeMode == mode
                                 SikAiButton(
                                     text = mode.name,
@@ -114,7 +113,7 @@ fun SettingsScreen(
                                         Text(
                                             text = cfg.displayName,
                                             style = SikAi.type.titleMedium,
-                                            color = colors.onSurface,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                         )
                                         Spacer(Modifier.width(8.dp))
                                         if (cfg.isBuiltIn) {
@@ -125,14 +124,14 @@ fun SettingsScreen(
                                     Text(
                                         text = cfg.type,
                                         style = SikAi.type.caption,
-                                        color = colors.onSurfaceMuted,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     if (cfg.baseUrl != null) {
                                         Spacer(Modifier.height(2.dp))
                                         Text(
                                             text = cfg.baseUrl,
                                             style = SikAi.type.caption,
-                                            color = colors.onSurfaceMuted,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
@@ -140,11 +139,10 @@ fun SettingsScreen(
                                     checked = cfg.enabled,
                                     onCheckedChange = { viewModel.setProviderEnabled(cfg.id, it) },
                                     colors = SwitchDefaults.colors(
-                                        checkedThumbColor = colors.onPrimary,
-                                        checkedTrackColor = colors.primary,
-                                        uncheckedThumbColor = colors.onSurfaceMuted,
-                                        uncheckedTrackColor = colors.surfaceMuted,
-                                        uncheckedBorderColor = colors.borderSubtle,
+                                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                                     ),
                                 )
                             }
@@ -153,13 +151,13 @@ fun SettingsScreen(
                             Text(
                                 text = "API KEY",
                                 style = SikAi.type.sectionTitle,
-                                color = colors.onSurfaceMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = row.maskedKey ?: if (cfg.apiKeyAlias == null) "Not required" else "Not set",
                                 style = SikAi.type.bodyMedium,
-                                color = if (row.maskedKey != null) colors.onSurface else colors.onSurfaceMuted,
+                                color = if (row.maskedKey != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
 
                             // Built-in keyless providers (Qwen, DeepInfra) don't need an API key.
@@ -202,7 +200,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Outlined.CloudDownload,
                             contentDescription = null,
-                            tint = colors.accent,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp),
                         )
                         Spacer(Modifier.width(12.dp))
@@ -210,12 +208,12 @@ fun SettingsScreen(
                             Text(
                                 text = "Downloaded materials",
                                 style = SikAi.type.titleMedium,
-                                color = colors.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
                                 text = "Manage offline papers and notes",
                                 style = SikAi.type.bodySmall,
-                                color = colors.onSurfaceMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -228,7 +226,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Outlined.History,
                         contentDescription = null,
-                        tint = colors.onSurfaceMuted,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp),
                     )
                 })
@@ -249,33 +247,33 @@ fun SettingsScreen(
                                     Text(
                                         text = log.providerId,
                                         style = SikAi.type.titleMedium,
-                                        color = colors.onSurface,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     SikAiStatusPill(
                                         text = if (log.success) "OK" else "FAIL",
-                                        accent = if (log.success) colors.accent else colors.danger,
+                                        accent = if (log.success) null else MaterialTheme.colorScheme.error,
                                     )
                                 }
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = "${log.task} · ${log.tookMs} ms",
                                     style = SikAi.type.caption,
-                                    color = colors.onSurfaceMuted,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 if (!log.success && !log.message.isNullOrBlank()) {
                                     Spacer(Modifier.height(2.dp))
                                     Text(
                                         text = log.message,
                                         style = SikAi.type.caption,
-                                        color = colors.danger,
+                                        color = MaterialTheme.colorScheme.error,
                                     )
                                 }
                             }
                             Text(
                                 text = formatTimestamp(log.timestampMillis),
                                 style = SikAi.type.caption,
-                                color = colors.onSurfaceMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }

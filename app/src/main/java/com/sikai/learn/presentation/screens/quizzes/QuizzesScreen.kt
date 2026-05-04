@@ -1,6 +1,5 @@
 package com.sikai.learn.presentation.screens.quizzes
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,14 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.RestartAlt
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,16 +41,7 @@ fun QuizzesScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         SikAiPageHeader(
-            title = "Quizzes",
-            subtitle = "MCQ · MIXED · AI",
-            trailing = {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = SikAi.colors.onSurface,
-                    modifier = Modifier.size(28.dp).clickable(onClick = onBack)
-                )
-            }
+            title = "Quizzes"
         )
 
         if (state.questions.isEmpty() && !state.loading) {
@@ -67,7 +55,11 @@ fun QuizzesScreen(
                             emphasized = subject.id == state.selectedSubjectId,
                             contentPadding = 10.dp,
                         ) {
-                            Text(subject.displayName, style = SikAi.type.label, color = SikAi.colors.onSurface)
+                            Text(
+                                text = subject.displayName, 
+                                style = SikAi.type.label, 
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
@@ -80,7 +72,11 @@ fun QuizzesScreen(
                 )
                 if (state.errorMessage != null) {
                     Spacer(Modifier.height(8.dp))
-                    Text(state.errorMessage!!, color = SikAi.colors.danger, style = SikAi.type.bodySmall)
+                    Text(
+                        text = state.errorMessage!!, 
+                        color = MaterialTheme.colorScheme.error, 
+                        style = SikAi.type.bodySmall
+                    )
                 }
             }
             return
@@ -128,7 +124,11 @@ fun QuizzesScreen(
 private fun QuestionCard(question: QuizQuestion, selectedIndex: Int?, onSelect: (Int) -> Unit) {
     SikAiCard(modifier = Modifier.fillMaxWidth()) {
         Column {
-            Text(question.prompt, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+            Text(
+                text = question.prompt, 
+                style = SikAi.type.titleMedium, 
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Spacer(Modifier.height(10.dp))
             question.options.forEachIndexed { idx, option ->
                 val isSelected = selectedIndex == idx
@@ -142,10 +142,14 @@ private fun QuestionCard(question: QuizQuestion, selectedIndex: Int?, onSelect: 
                         Text(
                             text = "${('A' + idx)}.",
                             style = SikAi.type.label,
-                            color = SikAi.colors.accent,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(end = 8.dp)
                         )
-                        Text(option, style = SikAi.type.bodyMedium, color = SikAi.colors.onSurface)
+                        Text(
+                            text = option, 
+                            style = SikAi.type.bodyMedium, 
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
@@ -158,13 +162,15 @@ private fun ResultsBlock(state: QuizzesState, onReset: () -> Unit) {
     val tokens = SikAi.tokens
     val correct = state.questions.count { state.selected[it.id] == it.correctIndex }
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = tokens.pageHorizontal, vertical = 12.dp)) {
-        SikAiCard( emphasized = true) {
+        SikAiCard(emphasized = true) {
             Column {
                 SikAiStatusPill(text = "RESULT")
                 Spacer(Modifier.height(10.dp))
-                Text("$correct / ${state.questions.size} correct",
+                Text(
+                    text = "$correct / ${state.questions.size} correct",
                     style = SikAi.type.displayMedium,
-                    color = SikAi.colors.onSurface)
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -173,29 +179,42 @@ private fun ResultsBlock(state: QuizzesState, onReset: () -> Unit) {
                 val chosen = state.selected[q.id]
                 SikAiCard {
                     Column {
-                        Text(q.prompt, style = SikAi.type.titleMedium, color = SikAi.colors.onSurface)
+                        Text(
+                            text = q.prompt, 
+                            style = SikAi.type.titleMedium, 
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         Spacer(Modifier.height(6.dp))
                         Text(
                             text = "Correct: ${q.options.getOrNull(q.correctIndex) ?: "—"}",
                             style = SikAi.type.bodySmall,
-                            color = SikAi.colors.accent,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         if (chosen != null && chosen != q.correctIndex) {
                             Text(
                                 text = "You: ${q.options.getOrNull(chosen) ?: "—"}",
                                 style = SikAi.type.bodySmall,
-                                color = SikAi.colors.danger,
+                                color = MaterialTheme.colorScheme.error,
                             )
                         }
                         if (q.explanation != null) {
                             Spacer(Modifier.height(4.dp))
-                            Text(q.explanation!!, style = SikAi.type.bodySmall, color = SikAi.colors.onSurfaceMuted)
+                            Text(
+                                text = q.explanation!!, 
+                                style = SikAi.type.bodySmall, 
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
             }
         }
         Spacer(Modifier.height(12.dp))
-        SikAiButton(text = "New quiz", onClick = onReset, leadingIcon = Icons.Outlined.RestartAlt, modifier = Modifier.fillMaxWidth())
+        SikAiButton(
+            text = "New quiz", 
+            onClick = onReset, 
+            leadingIcon = Icons.Outlined.RestartAlt, 
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }

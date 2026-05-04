@@ -7,8 +7,10 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class SikAiTokens(
-    val cornerSharp: RoundedCornerShape = RoundedCornerShape(8.dp),
-    val cornerCard: RoundedCornerShape = RoundedCornerShape(12.dp),
+    val cornerSmall: RoundedCornerShape = RoundedCornerShape(8.dp),
+    val cornerMedium: RoundedCornerShape = RoundedCornerShape(12.dp),
+    val cornerLarge: RoundedCornerShape = RoundedCornerShape(16.dp),
+    val cornerExtraLarge: RoundedCornerShape = RoundedCornerShape(28.dp),
     val cornerPill: RoundedCornerShape = RoundedCornerShape(999.dp),
     val space2: Dp = 2.dp,
     val space4: Dp = 4.dp,
@@ -20,7 +22,7 @@ data class SikAiTokens(
     val space24: Dp = 24.dp,
     val space32: Dp = 32.dp,
     val space40: Dp = 40.dp,
-    val pageHorizontal: Dp = 12.dp,
+    val pageHorizontal: Dp = 16.dp,
     val sectionGap: Dp = 24.dp,
     val touchTarget: Dp = 48.dp,
 )

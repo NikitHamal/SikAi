@@ -142,9 +142,6 @@ class AiTutorViewModel @Inject constructor(
                     content = it.text,
                 )
             }
-            if (hasAttachment && history.lastOrNull()?.role == AiMessageRole.USER) {
-                history.last().attachments + attachments
-            }
             val messages = if (hasAttachment) {
                 history.toMutableList().apply {
                     val lastIdx = indexOfLast { it.role == AiMessageRole.USER }

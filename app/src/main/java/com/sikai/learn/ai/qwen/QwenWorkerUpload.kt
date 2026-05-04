@@ -2,19 +2,18 @@ package com.sikai.learn.ai.qwen
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.sikai.learn.domain.model.AiAttachment
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.UUID
 
 internal object QwenWorkerUpload {
+
+    private const val TAG = "QwenUpload"
 
     fun upload(
         context: Context,
@@ -23,36 +22,44 @@ internal object QwenWorkerUpload {
         attachment: AiAttachment,
     ): JsonObject? {
         val bytes = runCatching {
-            context.contentResolver.openInputStream(Uri.parse(attachment.uri))!!.use { it.readBytes() }
-        }.getOrNull() ?: return null
+            context.contentResolver.openInputStream(Uri.parse(attachment.uri))?.use { it.readBytes() }
+        }.getOrNull()
+        if (bytes == null) {
+            Log.e(TAG, "Failed to read file: ${attachment.displayName} from ${attachment.uri}")
+            return null
+        }
 
-        // Call the worker's upload endpoint
-        val boundary = "----SikAiUpload${UUID.randomUUID()}"
-        val multipartBody = buildMultipart(boundary, attachment.displayName, attachment.mimeType, bytes)
+        val mimeType = attachment.mimeType.toMediaType()
+        val fileBody = bytes.toRequestBody(mimeType)
+
+        val multipartBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("file", attachment.displayName, fileBody)
+            .build()
 
         val req = Request.Builder()
             .url("$backendUrl/v1/qwen/upload")
-            .post(multipartBody.toRequestBody("multipart/form-data; boundary=$boundary".toMediaType()))
+            .post(multipartBody)
             .build()
 
         return try {
             client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return null
                 val text = resp.body?.string().orEmpty()
-                runCatching { kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject }.getOrNull()
+                if (!resp.isSuccessful) {
+                    Log.e(TAG, "Upload failed HTTP ${resp.code}: ${text.take(300)}")
+                    return null
+                }
+                val parsed = runCatching {
+                    kotlinx.serialization.json.Json.parseToJsonElement(text) as? JsonObject
+                }.getOrNull()
+                if (parsed == null) {
+                    Log.e(TAG, "Upload response not JSON: ${text.take(300)}")
+                }
+                parsed
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Upload exception: ${e.message}", e)
             null
         }
-    }
-
-    private fun buildMultipart(boundary: String, filename: String, mimeType: String, bytes: ByteArray): ByteArray {
-        val sb = StringBuilder()
-        sb.append("--$boundary\r\n")
-        sb.append("Content-Disposition: form-data; name=\"file\"; filename=\"$filename\"\r\n")
-        sb.append("Content-Type: $mimeType\r\n\r\n")
-        val headerBytes = sb.toString().toByteArray(Charsets.UTF_8)
-        val footerBytes = "\r\n--$boundary--\r\n".toByteArray(Charsets.UTF_8)
-        return headerBytes + bytes + footerBytes
     }
 }

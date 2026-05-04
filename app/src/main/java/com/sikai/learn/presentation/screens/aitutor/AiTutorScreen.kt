@@ -7,17 +7,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,7 +74,6 @@ fun AiTutorScreen(
             title = "AI Tutor"
         )
 
-        // Center the model selector
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             ModelSelectorPill(
                 models = state.availableModels,
@@ -260,19 +249,18 @@ private fun ModelSelectorPill(
         expanded = expanded,
         onExpandedChange = { expanded = it },
     ) {
-        Surface(
+        Box(
             modifier = Modifier
                 .menuAnchor()
                 .clip(RoundedCornerShape(24.dp))
-                .clickable { expanded = !expanded },
-            color = MaterialTheme.colorScheme.surfaceVariant,
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.AutoAwesome,
+                    imageVector = Icons.Outlined.Psychiatry,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant

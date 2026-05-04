@@ -37,14 +37,14 @@ fun SikAiBottomNav(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 12.dp, bottom = 12.dp, top = 8.dp) // External margins as requested
+            .padding(start = 12.dp, end = 12.dp, bottom = 8.dp, top = 4.dp) // Minimized margins
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(40.dp)) // Highly rounded borders as per image
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)) // Subtle floating background
-                .padding(vertical = 10.dp),
+                .clip(RoundedCornerShape(32.dp)) // Slimmer rounded borders
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                .padding(vertical = 6.dp), // Minimized vertical padding
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -53,7 +53,7 @@ fun SikAiBottomNav(
                 
                 Box(
                     modifier = Modifier
-                        .size(48.dp) // Large tap target / circle background
+                        .size(40.dp) // Reduced circle size
                         .clip(CircleShape)
                         .clickable { onSelect(item.key) }
                         .background(
@@ -67,7 +67,7 @@ fun SikAiBottomNav(
                         contentDescription = item.label,
                         tint = if (selected) MaterialTheme.colorScheme.onPrimary 
                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(26.dp) // Sized perfectly to the circle
+                        modifier = Modifier.size(22.dp) // Reduced icon size
                     )
                 }
             }

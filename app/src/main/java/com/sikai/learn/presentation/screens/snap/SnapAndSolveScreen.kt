@@ -81,7 +81,7 @@ fun SnapAndSolveScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .statusBarsPadding() // Ensure content doesn't hit the status bar
+                .statusBarsPadding()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -126,7 +126,6 @@ fun SnapAndSolveScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (state.attachmentUri == null) {
-                    // Empty State Content
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
                             modifier = Modifier.size(80.dp),
@@ -150,7 +149,6 @@ fun SnapAndSolveScreen(
                         )
                     }
 
-                    // Sigma Icon Top-Left
                     Icon(
                         imageVector = Icons.Outlined.Functions,
                         contentDescription = null,
@@ -161,7 +159,6 @@ fun SnapAndSolveScreen(
                         tint = MaterialTheme.colorScheme.outlineVariant
                     )
 
-                    // Document Icon Bottom-Right
                     Icon(
                         imageVector = Icons.Outlined.Description,
                         contentDescription = null,
@@ -172,7 +169,6 @@ fun SnapAndSolveScreen(
                         tint = MaterialTheme.colorScheme.outlineVariant
                     )
                 } else {
-                    // Selected Image Content
                     AsyncImage(
                         model = state.attachmentUri,
                         contentDescription = null,
@@ -180,7 +176,6 @@ fun SnapAndSolveScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Minimal Clear Icon Top-Right
                     IconButton(
                         onClick = { viewModel.clearAttachment() },
                         modifier = Modifier
@@ -202,7 +197,6 @@ fun SnapAndSolveScreen(
             Spacer(Modifier.height(32.dp))
 
             if (state.attachmentUri == null) {
-                // Camera and Gallery Buttons (Only when no photo)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -248,7 +242,6 @@ fun SnapAndSolveScreen(
                     }
                 }
             } else {
-                // Action Buttons when photo is present
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -268,7 +261,6 @@ fun SnapAndSolveScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Replace Button
                         SikAiButton(
                             text = "Replace",
                             onClick = { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
@@ -277,7 +269,6 @@ fun SnapAndSolveScreen(
                             modifier = Modifier.weight(1f)
                         )
                         
-                        // Solve Button
                         SikAiButton(
                             text = if (state.solving) "Solving..." else "Solve Now",
                             onClick = { viewModel.solve(extraPrompt.ifBlank { null }) },
@@ -334,19 +325,19 @@ private fun ModelSelectorPill(
         expanded = expanded,
         onExpandedChange = { expanded = it },
     ) {
-        Surface(
+        // Use Box with menuAnchor() directly for custom UI
+        Box(
             modifier = Modifier
                 .menuAnchor()
                 .clip(RoundedCornerShape(24.dp))
-                .clickable { expanded = !expanded },
-            color = MaterialTheme.colorScheme.surfaceVariant,
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.AutoAwesome,
+                    imageVector = Icons.Outlined.Psychiatry,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant

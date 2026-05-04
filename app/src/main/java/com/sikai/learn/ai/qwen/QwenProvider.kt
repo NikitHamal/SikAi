@@ -59,11 +59,19 @@ class QwenProvider @Inject constructor(
         val backendUrl = getBackendUrl()
 
         // 1) Upload files if any
+        val hasAttachments = request.messages.any { it.attachments.isNotEmpty() }
         val uploadedFiles = mutableListOf<JsonObject>()
         for (msg in request.messages) {
             for (att in msg.attachments) {
                 val uploaded = QwenWorkerUpload.upload(context, client, backendUrl, att)
-                if (uploaded != null) uploadedFiles += uploaded
+                if (uploaded != null) {
+                    uploadedFiles += uploaded
+                } else if (hasAttachments) {
+                    return@withContext AiProviderResult.Failure(
+                        AiFailureReason.ServerError, id,
+                        "Failed to upload file: ${att.displayName}"
+                    )
+                }
             }
         }
 
@@ -80,16 +88,23 @@ class QwenProvider @Inject constructor(
             }
         }
 
-        val thinkingEnabled = AiCapability.THINKING in capabilities
-        val chatType = when (request.task) {
-            AiTask.WEAKNESS_ANALYSIS -> "search"
-            AiTask.GENERATE_QUIZ, AiTask.STUDY_PLAN -> "t2t"
+        val hasImage = request.messages.any { msg ->
+            msg.attachments.any { it.mimeType.startsWith("image/") }
+        }
+        val hasDocument = request.messages.any { msg ->
+            msg.attachments.any { it.mimeType.startsWith("application/") || it.mimeType.startsWith("text/") }
+        }
+        val chatType = when {
+            hasImage -> "image"
+            hasDocument -> "document"
+            request.task == AiTask.WEAKNESS_ANALYSIS -> "search"
             else -> "t2t"
         }
         val chatMode = when (request.task) {
             AiTask.WEAKNESS_ANALYSIS -> "search"
             else -> "normal"
         }
+        val thinkingEnabled = AiCapability.THINKING in capabilities
 
         val messagesArray = buildJsonArray {
             addJsonObject {
@@ -131,7 +146,6 @@ class QwenProvider @Inject constructor(
 
             val answer = StringBuilder()
             val reasoning = StringBuilder()
-            val buffer = StringBuilder()
 
             while (!source.exhausted()) {
                 val line = source.readUtf8Line() ?: break

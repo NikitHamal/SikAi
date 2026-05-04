@@ -24,16 +24,10 @@ class QwenModelCatalog @Inject constructor(
     suspend fun get(forceRefresh: Boolean = false): List<AiModel> = withContext(Dispatchers.IO) {
         val fresh = (System.currentTimeMillis() - cachedAtMillis) < TTL_MS
         if (!forceRefresh && fresh && cache.isNotEmpty()) return@withContext cache
+        val backendUrl = getBackendUrl()
         val req = Request.Builder()
-            .url("https://chat.qwen.ai/api/v2/models")
-            .header("Origin", "https://chat.qwen.ai")
-            .header("Referer", "https://chat.qwen.ai/")
+            .url("$backendUrl/v1/qwen/models")
             .header("Accept", "application/json")
-            .header(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                    "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-            )
             .build()
         val parsed = runCatching {
             client.newCall(req).execute().use { resp ->
@@ -86,6 +80,15 @@ class QwenModelCatalog @Inject constructor(
 
     companion object {
         private const val TTL_MS = 5 * 60 * 1000L
+
+        private fun getBackendUrl(): String = try {
+            val clazz = Class.forName("com.sikai.learn.BuildConfig")
+            val field = clazz.getDeclaredField("BACKEND_BASE_URL")
+            field.get(null) as String
+        } catch (_: Exception) {
+            "https://sikai-content.nikithamalofficial.workers.dev"
+        }
+
         val FALLBACK = listOf(
             AiModel(
                 id = "qwen3.6-plus",

@@ -42,6 +42,8 @@
  *   PUT  /v1/admin/config/:key                        -> update config
  */
 
+import { handleQwenModels, handleQwenChat, handleQwenUpload } from "./qwen";
+
 export interface Env {
   DB: D1Database;
   ADMIN_TOKEN: string;
@@ -120,6 +122,11 @@ export default {
       if (path === "/v1/subjects" && method === "GET") return await handleSubjects(request, env);
       if (path === "/v1/analytics" && method === "POST") return await handleAnalytics(request, env);
       if (path === "/v1/config" && method === "GET") return await handleConfig(env);
+
+      // ── Qwen Proxy (no auth) ──
+      if (path === "/v1/qwen/models" && method === "GET") return await handleQwenModels(request, env);
+      if (path === "/v1/qwen/chat" && method === "POST") return await handleQwenChat(request, env);
+      if (path === "/v1/qwen/upload" && method === "POST") return await handleQwenUpload(request, env);
 
       // ── Admin ──
       if (path === "/v1/admin/login" && method === "POST") return await handleAdminLogin(request, env);

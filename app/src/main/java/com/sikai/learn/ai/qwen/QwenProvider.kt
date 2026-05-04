@@ -22,7 +22,6 @@ import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -68,24 +67,7 @@ class QwenProvider @Inject constructor(
             }
         }
 
-        // 2) Build messages for the worker
-        val messages = buildJsonArray {
-            for (msg in request.messages) {
-                addJsonObject {
-                    put("role", msg.role.name.lowercase())
-                    put("content", msg.content)
-                    if (msg.attachments.isNotEmpty()) {
-                        put("files", buildJsonArray {
-                            for (att in msg.attachments) {
-                                // files are pre-uploaded, we'll include the file objects
-                            }
-                        })
-                    }
-                }
-            }
-        }
-
-        // 3) Build the flat prompt
+        // 2) Build the flat prompt
         val systemPrompt = PromptBuilder.systemPromptFor(request)
         val flatPrompt = buildString {
             append(systemPrompt)
@@ -109,23 +91,24 @@ class QwenProvider @Inject constructor(
             else -> "normal"
         }
 
+        val messagesArray = buildJsonArray {
+            addJsonObject {
+                put("role", "user")
+                put("content", flatPrompt)
+                if (uploadedFiles.isNotEmpty()) put("files", buildJsonArray { uploadedFiles.forEach { add(it) } })
+            }
+        }
+
         val payload = buildJsonObject {
             put("model", model)
             put("chat_mode", chatMode)
             put("chat_type", chatType)
             put("thinking_enabled", thinkingEnabled)
             put("thinking_mode", "Auto")
-            put("stream", false)
-            put("messages", buildJsonArray {
-                addJsonObject {
-                    put("role", "user")
-                    put("content", flatPrompt)
-                    if (uploadedFiles.isNotEmpty()) put("files", buildJsonArray { uploadedFiles.forEach { add(it) } })
-                }
-            })
+            put("messages", messagesArray)
         }
 
-        // 4) Call the worker
+        // 3) Call the worker
         val req = Request.Builder()
             .url("$backendUrl/v1/qwen/chat")
             .post(payload.toString().toRequestBody(JSON))
@@ -134,54 +117,58 @@ class QwenProvider @Inject constructor(
 
         try {
             val resp = client.newCall(req).execute()
-            val body = resp.body?.string().orEmpty()
-
             if (!resp.isSuccessful) {
+                val body = resp.body?.string()?.take(500) ?: "unknown"
                 return@withContext AiProviderResult.Failure(
-                    AiFailureReason.ServerError, id,
-                    "Worker HTTP ${resp.code}: ${body.take(300)}"
+                    AiFailureReason.ServerError, id, "Worker HTTP ${resp.code}: $body"
                 )
             }
 
-            // Parse the response — the worker returns the full Qwen chat response
-            val json = runCatching { Json.parseToJsonElement(body) as? JsonObject }.getOrNull()
-                ?: return@withContext AiProviderResult.Failure(
-                    AiFailureReason.Parsing, id, "Failed to parse worker response"
-                )
+            // Parse SSE stream from the worker
+            val source = resp.body?.source() ?: return@withContext AiProviderResult.Failure(
+                AiFailureReason.Parsing, id, "Empty response body"
+            )
 
-            // If streaming was requested, we need to handle SSE
-            // For now, non-streaming: extract the answer from the response
-            val choices = json["choices"] as? kotlinx.serialization.json.JsonArray
-            if (choices != null && choices.isNotEmpty()) {
-                val first = choices[0] as? JsonObject
-                val content = (first?.get("message") as? JsonObject)?.get("content") as? JsonPrimitive
-                if (content != null) {
-                    return@withContext AiProviderResult.Success(
-                        AiResponse(
-                            text = content.content ?: "",
-                            providerId = id,
-                            providerLabel = displayName,
-                            modelId = model,
-                        )
-                    )
+            val answer = StringBuilder()
+            val reasoning = StringBuilder()
+            val buffer = StringBuilder()
+
+            while (!source.exhausted()) {
+                val line = source.readUtf8Line() ?: break
+                if (!line.startsWith("data: ")) continue
+                val data = line.substring(6).trim()
+                if (data == "[DONE]") break
+
+                val event = runCatching { Json.parseToJsonElement(data) as? JsonObject }.getOrNull() ?: continue
+                val choices = event["choices"] as? kotlinx.serialization.json.JsonArray ?: continue
+                val first = choices.firstOrNull() as? JsonObject ?: continue
+                val delta = first["delta"] as? JsonObject ?: continue
+                val content = (delta["content"] as? JsonPrimitive)?.content ?: continue
+                if (content.isEmpty()) continue
+                val phase = (delta["phase"] as? JsonPrimitive)?.content ?: ""
+                if (phase == "think" || phase == "web_search") {
+                    reasoning.append(content)
+                } else {
+                    answer.append(content)
                 }
             }
 
-            // Try to extract from the data field (Qwen format)
-            val data = json["data"] as? JsonObject
-            val answer = data?.get("answer") as? JsonPrimitive
-            if (answer != null) {
-                return@withContext AiProviderResult.Success(
-                    AiResponse(
-                        text = answer.content ?: "",
-                        providerId = id,
-                        providerLabel = displayName,
-                        modelId = model,
-                    )
+            val finalAnswer = answer.toString().ifBlank { reasoning.toString() }
+            if (finalAnswer.isBlank()) {
+                return@withContext AiProviderResult.Failure(
+                    AiFailureReason.ServerError, id, "Empty response from Qwen"
                 )
             }
 
-            AiProviderResult.Failure(AiFailureReason.Parsing, id, "No answer in worker response: ${body.take(200)}")
+            AiProviderResult.Success(
+                AiResponse(
+                    text = finalAnswer,
+                    providerId = id,
+                    providerLabel = displayName,
+                    modelId = model,
+                    reasoning = reasoning.toString().ifBlank { null },
+                )
+            )
         } catch (e: IOException) {
             AiProviderResult.Failure(AiFailureReason.Network, id, e.message ?: "network error")
         }
@@ -196,14 +183,12 @@ class QwenProvider @Inject constructor(
         }
     }
 
-    private fun getBackendUrl(): String {
-        return try {
-            val clazz = Class.forName("com.sikai.learn.BuildConfig")
-            val field = clazz.getDeclaredField("BACKEND_BASE_URL")
-            field.get(null) as String
-        } catch (_: Exception) {
-            "https://sikai-content.nikithamalofficial.workers.dev"
-        }
+    private fun getBackendUrl(): String = try {
+        val clazz = Class.forName("com.sikai.learn.BuildConfig")
+        val field = clazz.getDeclaredField("BACKEND_BASE_URL")
+        field.get(null) as String
+    } catch (_: Exception) {
+        "https://sikai-content.nikithamalofficial.workers.dev"
     }
 
     companion object {

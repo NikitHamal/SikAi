@@ -1,9 +1,16 @@
 package com.sikai.learn.ai.qwen
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sikai.learn.domain.model.AiCapability
 import com.sikai.learn.domain.model.AiModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -16,36 +23,50 @@ import javax.inject.Singleton
 @Singleton
 class QwenModelCatalog @Inject constructor(
     private val client: OkHttpClient,
+    private val dataStore: DataStore<Preferences>,
 ) {
-
-    @Volatile private var cache: List<AiModel> = FALLBACK
-    @Volatile private var cachedAtMillis: Long = 0L
+    @Volatile private var memoryCache: List<AiModel> = emptyList()
 
     suspend fun get(forceRefresh: Boolean = false): List<AiModel> = withContext(Dispatchers.IO) {
-        val fresh = (System.currentTimeMillis() - cachedAtMillis) < TTL_MS
-        if (!forceRefresh && fresh && cache.isNotEmpty()) return@withContext cache
-        val backendUrl = getBackendUrl()
+        val cachedAt = getCachedAt()
+        val isExpired = (System.currentTimeMillis() - cachedAt) > TTL_MS
+
+        if (!forceRefresh && memoryCache.isNotEmpty() && !isExpired) {
+            return@withContext memoryCache
+        }
+
+        val persisted = if (!forceRefresh && memoryCache.isEmpty()) loadPersisted() else null
+        if (persisted != null && !isExpired) {
+            memoryCache = persisted
+            return@withContext persisted
+        }
+
+        val models = fetchFromQwen()
+        if (models.isNotEmpty()) {
+            memoryCache = models
+            savePersisted(models)
+        }
+        models.ifEmpty { FALLBACK }
+    }
+
+    private fun fetchFromQwen(): List<AiModel> {
         val req = Request.Builder()
-            .url("$backendUrl/v1/qwen/models")
+            .url("https://chat.qwen.ai/api/v2/models")
             .header("Accept", "application/json")
             .build()
-        val parsed = runCatching {
+        return runCatching {
             client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return@use null
+                if (!resp.isSuccessful) return@use emptyList()
                 val text = resp.body?.string().orEmpty()
-                Json.parseToJsonElement(text) as? JsonObject
+                val json = Json.parseToJsonElement(text) as? JsonObject
+                mapResponse(json)
             }
-        }.getOrNull()
-
-        val models = parsed?.let { mapResponse(it) } ?: FALLBACK
-        cache = models
-        cachedAtMillis = System.currentTimeMillis()
-        models
+        }.getOrDefault(emptyList())
     }
 
     private fun mapResponse(root: JsonObject): List<AiModel> {
         val data = root["data"] as? JsonObject
-        val list = (data?.get("data") as? JsonArray) ?: return FALLBACK
+        val list = (data?.get("data") as? JsonArray) ?: return emptyList()
         return list.mapNotNull { el ->
             val m = el as? JsonObject ?: return@mapNotNull null
             val info = m["info"] as? JsonObject ?: return@mapNotNull null
@@ -69,8 +90,7 @@ class QwenModelCatalog @Inject constructor(
                 displayName = name,
                 providerId = "qwen",
                 capabilities = capabilities,
-                maxContext = (meta?.get("max_context_length") as? JsonPrimitive)?.content?.toIntOrNull()
-                    ?: 1_000_000,
+                maxContext = (meta?.get("max_context_length") as? JsonPrimitive)?.content?.toIntOrNull() ?: 1_000_000,
                 description = (meta?.get("description") as? JsonPrimitive)?.content.orEmpty(),
                 supportsThinking = AiCapability.THINKING in capabilities,
                 supportsSearch = AiCapability.SEARCH in capabilities,
@@ -78,16 +98,27 @@ class QwenModelCatalog @Inject constructor(
         }
     }
 
-    companion object {
-        private const val TTL_MS = 5 * 60 * 1000L
+    private suspend fun getCachedAt(): Long = dataStore.data.first()[KEY_CACHED_AT] ?: 0L
 
-        private fun getBackendUrl(): String = try {
-            val clazz = Class.forName("com.sikai.learn.BuildConfig")
-            val field = clazz.getDeclaredField("BACKEND_BASE_URL")
-            field.get(null) as String
+    private suspend fun loadPersisted(): List<AiModel>? = dataStore.data.first()[KEY_MODELS]?.let { jsonStr ->
+        try {
+            Json.decodeFromString<List<AiModel>>(jsonStr)
         } catch (_: Exception) {
-            "https://sikai-content.nikithamalofficial.workers.dev"
+            null
         }
+    }
+
+    private suspend fun savePersisted(models: List<AiModel>) {
+        dataStore.edit { prefs ->
+            prefs[KEY_MODELS] = Json.encodeToString(models)
+            prefs[KEY_CACHED_AT] = System.currentTimeMillis()
+        }
+    }
+
+    companion object {
+        private const val TTL_MS = 24 * 60 * 60 * 1000L
+        private val KEY_MODELS = stringPreferencesKey("qwen_models_cache")
+        private val KEY_CACHED_AT = longPreferencesKey("qwen_models_cached_at")
 
         val FALLBACK = listOf(
             AiModel(

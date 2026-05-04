@@ -1,5 +1,6 @@
 package com.sikai.learn.ui.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -52,7 +53,7 @@ fun SikAiButton(
         enabled = enabled,
         colors = buttonColors,
         shape = SikAi.tokens.cornerPill,
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (leadingIcon != null) {
@@ -65,7 +66,9 @@ fun SikAiButton(
             }
             Text(
                 text = text,
-                style = SikAi.type.label
+                style = SikAi.type.label,
+                maxLines = 1,
+                softWrap = false
             )
         }
     }

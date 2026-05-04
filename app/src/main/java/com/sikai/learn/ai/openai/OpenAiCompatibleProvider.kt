@@ -37,7 +37,7 @@ import java.io.IOException
 
 /**
  * Generic OpenAI Chat Completions implementation. Used as-is for any provider
- * speaking the OpenAI wire format: DeepInfra, OpenRouter, NVIDIA NIM, DeepSeek,
+ * speaking the OpenAI wire format.
  * and any user-supplied custom server.
  */
 open class OpenAiCompatibleProvider(

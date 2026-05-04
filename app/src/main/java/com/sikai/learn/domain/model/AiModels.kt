@@ -9,22 +9,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AiProviderType(val id: String) {
     @Serializable object Qwen : AiProviderType("qwen")
-    @Serializable object DeepInfra : AiProviderType("deepinfra")
-    @Serializable object Gemini : AiProviderType("gemini")
-    @Serializable object OpenRouter : AiProviderType("openrouter")
-    @Serializable object Nvidia : AiProviderType("nvidia")
-    @Serializable object DeepSeek : AiProviderType("deepseek")
     @Serializable object OpenAiCompatible : AiProviderType("openai_compatible")
     @Serializable data class Custom(val customId: String) : AiProviderType("custom:$customId")
 
     companion object {
         fun fromId(id: String): AiProviderType = when (id) {
             "qwen" -> Qwen
-            "deepinfra" -> DeepInfra
-            "gemini" -> Gemini
-            "openrouter" -> OpenRouter
-            "nvidia" -> Nvidia
-            "deepseek" -> DeepSeek
             "openai_compatible" -> OpenAiCompatible
             else -> if (id.startsWith("custom:")) Custom(id.removePrefix("custom:")) else Custom(id)
         }

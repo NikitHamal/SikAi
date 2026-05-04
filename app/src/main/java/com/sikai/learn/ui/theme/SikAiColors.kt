@@ -59,6 +59,17 @@ object SikAiPalette {
     val OutlineDark = Color(0xFF90909A)
     val ErrorDark = Color(0xFFFFB4AB)
     val OnErrorDark = Color(0xFF690005)
+
+    val AccentLight = Color(0xFF4A4AB2)
+    val AccentDark = Color(0xFFBEC2FF)
+    val OnSurfaceMutedLight = Color(0xFF787890)
+    val OnSurfaceMutedDark = Color(0xFFA0A0B8)
+    val SurfaceMutedLight = Color(0xFFF0EFF8)
+    val SurfaceMutedDark = Color(0xFF2A2A36)
+    val DangerLight = Color(0xFFD32F2F)
+    val DangerDark = Color(0xFFFF5252)
+    val BorderSubtleLight = Color(0xFFD8D8E8)
+    val BorderSubtleDark = Color(0xFF3A3A4A)
 }
 
 @Immutable
@@ -84,6 +95,11 @@ data class SikAiColors(
     val outline: Color,
     val error: Color,
     val onError: Color,
+    val accent: Color,
+    val onSurfaceMuted: Color,
+    val surfaceMuted: Color,
+    val danger: Color,
+    val borderSubtle: Color,
     val isDark: Boolean,
 )
 
@@ -109,6 +125,11 @@ fun lightSikAiColors() = SikAiColors(
     outline = SikAiPalette.OutlineLight,
     error = SikAiPalette.ErrorLight,
     onError = SikAiPalette.OnErrorLight,
+    accent = SikAiPalette.AccentLight,
+    onSurfaceMuted = SikAiPalette.OnSurfaceMutedLight,
+    surfaceMuted = SikAiPalette.SurfaceMutedLight,
+    danger = SikAiPalette.DangerLight,
+    borderSubtle = SikAiPalette.BorderSubtleLight,
     isDark = false,
 )
 
@@ -134,5 +155,10 @@ fun darkSikAiColors() = SikAiColors(
     outline = SikAiPalette.OutlineDark,
     error = SikAiPalette.ErrorDark,
     onError = SikAiPalette.OnErrorDark,
+    accent = SikAiPalette.AccentDark,
+    onSurfaceMuted = SikAiPalette.OnSurfaceMutedDark,
+    surfaceMuted = SikAiPalette.SurfaceMutedDark,
+    danger = SikAiPalette.DangerDark,
+    borderSubtle = SikAiPalette.BorderSubtleDark,
     isDark = true,
 )

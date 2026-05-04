@@ -12,6 +12,7 @@ data class SikAiTokens(
     val cornerLarge: RoundedCornerShape = RoundedCornerShape(16.dp),
     val cornerExtraLarge: RoundedCornerShape = RoundedCornerShape(28.dp),
     val cornerPill: RoundedCornerShape = RoundedCornerShape(999.dp),
+    val cornerSharp: RoundedCornerShape = RoundedCornerShape(4.dp),
     val space2: Dp = 2.dp,
     val space4: Dp = 4.dp,
     val space6: Dp = 6.dp,

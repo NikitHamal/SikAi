@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,35 +43,14 @@ fun SikAiSectionTitle(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         trailing?.invoke()
+}
     }
 }
 
 @Composable
-fun SikAiStatusPill(
-    text: String,
-    modifier: Modifier = Modifier,
-    accent: Color? = null,
-    leadingIcon: ImageVector? = null,
-) {
-    val containerColor = MaterialTheme.colorScheme.surfaceVariant
-    val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-    
-    Row(
-        modifier = modifier
-            .clip(SikAi.tokens.cornerPill)
-            .background(containerColor)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (leadingIcon != null) {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(Modifier.width(6.dp))
-        }
+fun SikAiHairline(modifier: Modifier = Modifier) {
+    HorizontalDivider(modifier = modifier)
+}
         Text(
             text = text,
             style = SikAi.type.label,
